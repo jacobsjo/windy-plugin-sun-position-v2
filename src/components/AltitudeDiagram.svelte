@@ -44,6 +44,7 @@
     svg{
         width: 290px;
         height: 100px;
+        min-height: 100px;
         path {
             fill: none;
             fill: none;

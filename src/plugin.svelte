@@ -227,6 +227,8 @@
     align-items: center;
     width: 290px;
     gap: 0.5rem;
+    max-height: calc(100vh - 22rem);
+    overflow-y: scroll;
 }
 
 .current-time{
