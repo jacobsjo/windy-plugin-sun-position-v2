@@ -9,11 +9,15 @@
 
 //    const { title } = config;
 //    import ImageCheckbox from "./components/ImageCheckbox.svelte";
-    import { time_format } from "./util";
-    import AltitureDiagram from "./components/AltitureDiagram.svelte";
+    import { Times, time_format } from "./util";
+    import AltitudeDiagram from "./components/AltitudeDiagram.svelte";
     import CurrentPosInfobox from "./components/CurrentPosInfobox.svelte";
     import { LatLon } from '@windycom/plugin-devtools/types/interfaces';
     import SunDial from './components/SunDial.svelte';
+    import Timeline from './components/Timeline.svelte';
+
+
+    SunCalc.addTime(-4, "blueHourEnd", "blueHour")
 
 //    let showPhotoSun = true
 //    let showAstroSun = true
@@ -21,6 +25,7 @@
 
     var mounted = false;
 
+//    let time = new Date(2023, 12, 15, 10, 0, 0, 0)
     let time = store.get('timestamp')
     store.on('timestamp', ovr => time = ovr)
 
@@ -84,11 +89,15 @@
             })
         }
     }
+
+    function setTime(event: any){
+        store.set('timestamp', event.detail.time)
+    }
     
     $: timezone = tzlookup(pos.lat, pos.lon)
 
     // get sun directions
-    $: times = SunCalc.getTimes(time, pos.lat, pos.lon)
+    $: times = SunCalc.getTimes(time, pos.lat, pos.lon) as Times;
     $: sunPos = SunCalc.getPosition(time, pos.lat, pos.lon)
     $: sunrisePos = SunCalc.getPosition(times.sunrise, pos.lat, pos.lon)
     $: sunsetPos = SunCalc.getPosition(times.sunset, pos.lat, pos.lon)
@@ -130,45 +139,31 @@
 
 </script>
 
-<!--<div class="plugin__mobile-header">
-    { title }
+<!--
+<div class="options">
+    <ImageCheckbox enabled={showAstroSun} title="Show sun details (astronomical)" emote="&#x1f52d;" />
+    <ImageCheckbox enabled={showPhotoSun} title="Show sun details (photography)" emote="&#x1f4f7;" />
+    <ImageCheckbox enabled={showMoon} title="Show moon details" isMoon emote="&#x263E;" />
 </div>
-<section class="plugin__content">
-    <div
-        class="plugin__title plugin__title--chevron-back"
-        on:click={ () => bcast.emit('rqstOpen', 'menu') }
-    >
-    { title }
-    </div>
-	<! --div class="open-picker">
-		<h2>Picker not open</h2>
-		Please open the weather picker to define position for sun-details.
-	</div-- >-->
-
-    <!--
-    <div class="options">
-        <ImageCheckbox enabled={showAstroSun} title="Show sun details (astronomical)" emote="&#x1f52d;" />
-        <ImageCheckbox enabled={showPhotoSun} title="Show sun details (photography)" emote="&#x1f4f7;" />
-        <ImageCheckbox enabled={showMoon} title="Show moon details" isMoon emote="&#x263E;" />
-    </div>
-    <div class="timeline"></div>
+<div class="timeline"></div>
 
 -->
 
-	<!--div class="footnote">
-		<div>windy-plugin-sun-position@<span class=plugin-version></span></div>
-		<div>by Jochen Jacobs (@jacobsjo)</div><br />
-		<a href="https://community.windy.com/topic/9017/sun-position-plugin">plugin page</a>
-		<a href="https://github.com/jacobsjo/windy-plugin-sun-position">GitHub</a>
-	</div-->
+<!--div class="footnote">
+    <div>windy-plugin-sun-position@<span class=plugin-version></span></div>
+    <div>by Jochen Jacobs (@jacobsjo)</div><br />
+    <a href="https://community.windy.com/topic/9017/sun-position-plugin">plugin page</a>
+    <a href="https://github.com/jacobsjo/windy-plugin-sun-position">GitHub</a>
+</div-->
 
 <div class="current">
-    <AltitureDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
+    <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
     <div class="current-time" id=current_time>{ time_format(time, timezone, zuluMode) }</div>
     <div class="infoboxes">
-        <CurrentPosInfobox title="Sun" pos={sunPos} />
-        <CurrentPosInfobox isMoon title="Moon" pos={sunPos} moonIlumination={moonIllumination} />
+        <CurrentPosInfobox on:setTime={setTime} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
+        <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={sunPos} moonIlumination={moonIllumination} />
     </div>
+    <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} />
 </div>
 
 <style lang="less">
@@ -184,7 +179,7 @@
     flex-direction: column;
     align-items: center;
     width: 290px;
-    gap: 0.3rem;
+    gap: 0.5rem;
 }
 
 .current-time{

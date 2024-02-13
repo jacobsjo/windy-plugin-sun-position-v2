@@ -1,5 +1,7 @@
 <script lang="ts">
-    import { getMoonPhaseName, radsToDeg } from 'src/util';
+	import { createEventDispatcher } from 'svelte';
+
+    import { getMoonPhaseName, radsToDeg, time_format } from 'src/util';
     import {
         GetMoonIlluminationResult,
         GetMoonPositionResult,
@@ -7,15 +9,35 @@
     } from 'suncalc';
 
     export var isMoon: boolean = false;
+    export var timezone: string;
+    export var zuluMode: boolean;
     export var title: string;
     export var pos: GetMoonPositionResult | GetSunPositionResult;
+    export var rise: Date | undefined;
+    export var set: Date | undefined;
     export var moonIlumination: GetMoonIlluminationResult | undefined = undefined;
 
     $: moonPhase = getMoonPhaseName(moonIlumination?.phase ?? 0);
+
+    const dispatch = createEventDispatcher();
+
+    function setTime(time: Date | undefined){
+        if (time){
+            dispatch('setTime', {
+                time: time.getTime()
+            })
+        }
+    }
 </script>
 
 <div class="box">
     <span class="title" class:moon={isMoon}>{title}</span><br />
+    <div class="line">
+        <span class="small-label">↗</span>
+        <span class="value linked" on:click={() => setTime(rise)}>{time_format(rise?.getTime() ?? NaN, timezone, zuluMode)}</span>
+        <span class="small-label">↘</span>
+        <span class="value linked" on:click={() => setTime(set)}>{time_format(set?.getTime() ?? NaN, timezone, zuluMode)}</span>
+    </div>
     <div class="line">
         <span class="label">Azimuth</span>
         <span class="value">{radsToDeg(pos.azimuth).toFixed(1)}°</span>
@@ -80,12 +102,27 @@
         display: inline-block;
         text-align: left;
         width: 5rem;
+        
+    }
+
+    .linked {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .linked:hover {
+        color: rgb(253, 253, 141)
     }
 
     .label {
         display: inline-block;
         width: 8rem;
         text-align: right;
+    }
+
+    .small-label {
+        display: inline-block;
+        width: 2rem;
     }
 
     .value, .large-value{

@@ -1,3 +1,4 @@
+import { GetTimesResult } from "suncalc";
 
 
 export function time_format(d: number, timezone: string, zuluMode: boolean): string {
@@ -42,4 +43,4 @@ export function radsToDeg(rad: number){
     return rad / Math.PI * 180;
 }
 
-
+export type Times = GetTimesResult & {blueHour: Date; blueHourEnd: Date};

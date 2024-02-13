@@ -3,7 +3,7 @@
     import SunCalc from 'suncalc';
 
     const WIDTH = 290;
-    const HEIGHT = 150;
+    const HEIGHT = 100;
     const SECONDS_IN_DAY: number = 24 * 60 * 60 * 1000;
     const STEPS = 100
     const STEP_SIZE = 24.0 * 60 * 60 * 1000 / STEPS
@@ -43,7 +43,7 @@
 
     svg{
         width: 290px;
-        height: 150px;
+        height: 100px;
         path {
             fill: none;
             fill: none;
