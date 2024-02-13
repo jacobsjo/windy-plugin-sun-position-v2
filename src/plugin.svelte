@@ -1,11 +1,13 @@
 <script lang="ts">
     import store from '@windy/store';
     import { map } from '@windy/map';
+    import { setUrl } from '@windy/location';
     import { onDestroy, onMount } from 'svelte';
     import SunCalc from 'suncalc';
     import tzlookup from 'tz-lookup';
 
-//    import config from './pluginConfig';
+    import config from './pluginConfig';
+    const { name } = config;
 
 //    const { title } = config;
 //    import ImageCheckbox from "./components/ImageCheckbox.svelte";
@@ -25,6 +27,8 @@
 
     var mounted = false;
 
+    var showTimeline = false;
+
 //    let time = new Date(2023, 12, 15, 10, 0, 0, 0)
     let time = store.get('timestamp')
     store.on('timestamp', ovr => time = ovr)
@@ -32,9 +36,9 @@
 
     let pos: LatLon = {lat: 0, lon: 0};
 
-    function setPosition(setPos?: LatLon): boolean{
-        if (setPos){
-            pos = setPos
+    function setPosition(setPos?: any): boolean{
+        if (setPos && setPos.lat && setPos.lon){
+            pos = {lat: setPos.lat, lon: setPos.lon}
             updateMarker()
             return true
         }
@@ -50,6 +54,7 @@
             setPosition(ovr)
         }
     })
+
 
     const dialIcon = L.divIcon({className: 'dial', iconAnchor: [0, 0], iconSize: [200, 200]})
     const dialMarker = L.marker({lat: 0, lng: 0}, {icon: dialIcon})
@@ -120,7 +125,14 @@
 
     $: moonIllumination = SunCalc.getMoonIllumination(time)
     
-    export const onopen = (params?: LatLon) => {
+    $: setUrl(name, {lat: pos.lat, lon: pos.lon, showtimeline: showTimeline ? "showTimeline" : "hideTimeline"})
+
+    export const onopen = (params?: Partial<LatLon & {showtimeline: string}> ) => {
+        if (params?.showtimeline){
+            console.log(params.showtimeline)
+            showTimeline = params.showtimeline === "showTimeline";
+        }
+
         if (setPosition(params)) return
         if (setPosition(store.get('pickerLocation'))) return
         const mapCenter = map.getCenter()
@@ -135,6 +147,7 @@
         mounted = false;
         dialMarker.remove()
         dialDiv = null
+        console.log(showTimeline)
     });
 
 </script>
@@ -160,10 +173,12 @@
     <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
     <div class="current-time" id=current_time>{ time_format(time, timezone, zuluMode) }</div>
     <div class="infoboxes">
-        <CurrentPosInfobox on:setTime={setTime} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
+        <CurrentPosInfobox on:setTime={setTime} on:showTimeline={(evt) => showTimeline = evt.detail.enabled} showTimeline={showTimeline} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
         <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={sunPos} moonIlumination={moonIllumination} />
     </div>
-    <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} />
+    {#if showTimeline}
+        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} />
+    {/if}
 </div>
 
 <style lang="less">
@@ -173,6 +188,38 @@
     gap: 0.4rem;
     justify-content: center;
 }*/
+
+    @nightColor: black;
+    @astroColor: #040438;
+    @nauticalColor: #1c1c75;
+    @blueColor: rgb(3, 72, 199);
+    @goldenColor: orange;
+    @dayColor: yellow;
+
+    :global([id='Nighttime']) {
+        --color: @nightColor;
+    }
+
+    :global([id='Astronomical Twilight']) {
+        --color: @astroColor;
+    }
+
+    :global([id='Nautical Twilight']) {
+        --color: @nauticalColor;
+    }
+
+    :global([id='Blue Hour']) {
+        --color: @blueColor;
+    }
+
+    :global([id='Golden Hour']) {
+        --color: @goldenColor;
+    }
+
+    :global([id='Daytime']) {
+        --color: @dayColor;
+    }
+
 
 .current {
     display: flex;

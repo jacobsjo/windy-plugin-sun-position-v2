@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 
-    import { getMoonPhaseName, radsToDeg, time_format } from 'src/util';
+    import { getMoonPhaseName, getSunlightName, radsToDeg, time_format } from 'src/util';
     import {
         GetMoonIlluminationResult,
         GetMoonPositionResult,
@@ -17,7 +17,10 @@
     export var set: Date | undefined;
     export var moonIlumination: GetMoonIlluminationResult | undefined = undefined;
 
+    export var showTimeline: boolean = false
+
     $: moonPhase = getMoonPhaseName(moonIlumination?.phase ?? 0);
+    $: sunlight = getSunlightName(radsToDeg(pos.altitude));
 
     const dispatch = createEventDispatcher();
 
@@ -52,6 +55,10 @@
         <span class="value">{(moonIlumination.fraction * 100).toFixed(1)}%</span>
     </div>
     <span class="large-value">{moonPhase}</span>
+    {/if}
+    {#if !isMoon}
+    <span class="large-value sunlight" id="{sunlight}">{sunlight == "Astronomical Twilight" ? "Astron. Twilight" : sunlight}</span>
+    <span class="large-value linked" class:selected = {showTimeline} on:click={() => dispatch('showTimeline', {enabled: !showTimeline})}>{showTimeline ? "Hide Timeline" : "Show Timeline"}</span>
     {/if}
 </div>
 
@@ -114,6 +121,10 @@
         color: rgb(253, 253, 141)
     }
 
+    .linked.selected {
+        color: rgb(218, 218, 80);
+    }
+
     .label {
         display: inline-block;
         width: 8rem;
@@ -126,6 +137,11 @@
     }
 
     .value, .large-value{
-        color: rgb(255, 255, 201)
+        color: rgb(255, 255, 201);
+        white-space: nowrap;
+    }
+
+    .sunlight {
+        color: var(--color);
     }
 </style>

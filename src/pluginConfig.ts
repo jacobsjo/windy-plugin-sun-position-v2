@@ -11,7 +11,7 @@ const config: ExternalPluginConfig = {
     desktopUI: 'embedded',
     mobileUI: 'fullscreen',
     addToContextmenu: true,
-    routerPath: '/sun-position',
+    routerPath: '/sun-position/:showtimeline?/:lat?/:lon?',
     private: true, // TODO change this when ready to publish,
 };
 

@@ -47,36 +47,6 @@
 {/if}
 
 <style lang="less">
-    @nightColor: black;
-    @astroColor: #040438;
-    @nauticalColor: #1c1c75;
-    @blueColor: rgb(3, 72, 199);
-    @goldenColor: orange;
-    @dayColor: yellow;
-
-    .timelineEntry[id='Nighttime'] {
-        --color: @nightColor;
-    }
-
-    .timelineEntry[id='Astronomical Twilight'] {
-        --color: @astroColor;
-    }
-
-    .timelineEntry[id='Nautical Twilight'] {
-        --color: @nauticalColor;
-    }
-
-    .timelineEntry[id='Blue Hour'] {
-        --color: @blueColor;
-    }
-
-    .timelineEntry[id='Golden Hour'] {
-        --color: @goldenColor;
-    }
-
-    .timelineEntry[id='Daytime'] {
-        --color: @dayColor;
-    }
 
     .timelineEntry {
         display: flex;
