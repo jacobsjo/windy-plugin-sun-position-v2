@@ -1,0 +1,65 @@
+{
+    "name": "windy-plugin-sun-position",
+    "version": "2.0.0-alpha.1",
+    "description": "Windy plugin that shows sun position on the map and gives details about sunset and sunrise times.",
+    "main": "dist/plugin.min.js",
+    "type": "module",
+    "scripts": {
+        "build": "rm -rf dist && mkdir dist && SERVE=false rollup -c && cp package.json dist/",
+        "start": "rollup -w -c"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/jacobsjo/windy-plugin-sun-position.git"
+    },
+    "keywords": [
+        "windy",
+        "windy.com",
+        "plugins"
+    ],
+    "author": "jacobsjo",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/jacobsjo/windy-plugin-sun-position/issues"
+    },
+    "homepage": "https://jacobsjo.eu",
+    "dependencies": {
+        "@rollup/plugin-commonjs": "^25.0.7",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-terser": "^0.4.4",
+        "@rollup/plugin-typescript": "^11.1.6",
+        "@types/geojson": "^7946.0.14",
+        "@windycom/plugin-devtools": "^1.0.4",
+        "eslint-import-resolver-typescript": "^3.6.1",
+        "eslint-plugin-svelte": "^2.35.1",
+        "install": "^0.13.0",
+        "less": "^4.2.0",
+        "less-plugin-autoprefixer": "^2.1.0",
+        "rollup": "^4.9.6",
+        "rollup-plugin-cleanup": "^3.2.1",
+        "rollup-plugin-serve": "^1.1.1",
+        "rollup-plugin-svelte": "^7.1.6",
+        "rollup-plugin-swc3": "^0.11.0",
+        "suncalc": "^1.9.0",
+        "svelte": "^4.2.9",
+        "svelte-preprocess": "^5.1.3",
+        "svelte-preprocess-less": "^0.4.0",
+        "typescript": "^5.3.3",
+        "tz-lookup": "^6.1.25"
+    },
+    "devDependencies": {
+        "@types/d3": "^7.4.3",
+        "@types/rollup": "^0.54.0",
+        "@types/suncalc": "^1.9.2",
+        "@types/tz-lookup": "^6.1.2",
+        "@typescript-eslint/eslint-plugin": "^6.19.1",
+        "d3": "^7.8.5",
+        "eslint": "^8.56.0",
+        "eslint-config-standard-with-typescript": "^43.0.1",
+        "eslint-plugin-import": "^2.29.1",
+        "eslint-plugin-n": "^16.6.2",
+        "eslint-plugin-promise": "^6.1.1",
+        "prettier": "^3.2.4",
+        "prettier-plugin-svelte": "^3.1.2"
+    }
+}
