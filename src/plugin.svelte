@@ -1,6 +1,7 @@
 <script lang="ts">
     import store from '@windy/store';
     import { map } from '@windy/map';
+    import picker from '@windy/picker';
     import { setUrl } from '@windy/location';
     import { onDestroy, onMount } from 'svelte';
     import SunCalc from 'suncalc';
@@ -45,16 +46,19 @@
         return false
     }
 
-    var lastPickerLocation: LatLon | null = null;
-    store.on('pickerLocation', (ovr) => {
-        if (lastPickerLocation?.lat === ovr?.lat && lastPickerLocation?.lon === ovr?.lon){
-            return
-        } else {
-            lastPickerLocation = ovr
+    picker.emitter.on('pickerOpened', (ovr: LatLon) => {
+        setPosition(ovr)
+    })
+
+    picker.emitter.on('pickerMoved', (ovr: LatLon) => {
+        setPosition(ovr)
+    })
+
+    store.on('detailLocation', (ovr) => {
+        if (ovr){
             setPosition(ovr)
         }
     })
-
 
     const dialIcon = L.divIcon({className: 'dial', iconAnchor: [0, 0], iconSize: [200, 200]})
     const dialMarker = L.marker({lat: 0, lng: 0}, {icon: dialIcon})
