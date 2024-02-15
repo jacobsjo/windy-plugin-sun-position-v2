@@ -1,7 +1,6 @@
 <script lang="ts">
     import store from '@windy/store';
     import { map } from '@windy/map';
-    // import picker from '@windy/picker';
     import { setUrl } from '@windy/location';
     import bcast from '@windy/broadcast';
     import { onDestroy, onMount } from 'svelte';
@@ -12,10 +11,7 @@
     import { get as getReverseName } from '@windy/reverseName';
 
     import config from './pluginConfig';
-    const { name, title } = config;
 
-//    const { title } = config;
-//    import ImageCheckbox from "./components/ImageCheckbox.svelte";
     import { Times, time_format } from "./util";
     import AltitudeDiagram from "./components/AltitudeDiagram.svelte";
     import CurrentPosInfobox from "./components/CurrentPosInfobox.svelte";
@@ -33,69 +29,49 @@
 
     var mounted = false;
 
-    // Lets keep timeline open by default
-    var showTimeline = true;
-
 //    let time = new Date(2023, 12, 15, 10, 0, 0, 0)
     let time = store.get('timestamp')
-
-    // Bad practice. Listeners must be removed onDestroy
-    // store.on('timestamp', ovr => time = ovr)
 
     const changeTime = (_tm: Timestamp) => time = _tm;
 
     let pos: LatLon = {lat: 0, lon: 0};
 
     let reverseName: null | string = null;
+    let reverseNameOutdated: boolean = true;
 
-    function setPosition(setPos?: any): boolean{
-        if (setPos && setPos.lat && setPos.lon){
-            pos = {lat: setPos.lat, lon: setPos.lon}
+    function setPosition(setPos?: any, isDrag: boolean = false): boolean{
+        if (setPos && setPos.lat && (setPos.lon || setPos.lng)){
+            pos = {lat: setPos.lat, lon: setPos.lon ?? setPos.lng}
             updateMarker()
 
-            getReverseName(pos).then(({name, region}) => {
-                reverseName = region ? `${ name }, ${ region }` : name;
-            });
+            if (!isDrag){
+                //console.log('settings url')
+                setUrl(config.name, pos)
+
+                getReverseName(pos).then(({name, region}) => {
+                    reverseName = (region && region !== name) ? `${ name }, ${ region }` : name;
+                    reverseNameOutdated = false
+                });
+            } else {
+                reverseNameOutdated = true
+            }
 
             return true
         }
         return false
     }
 
-        /**
-
-    1. Using the picker for getting location is depreciated,
-       lets use singleclick instead
-
-    2.  All the listeners MUST be removed onDestroy
-
-    picker.emitter.on('pickerOpened', (ovr: LatLon) => {
-        setPosition(ovr)
-    })
-
-    picker.emitter.on('pickerMoved', (ovr: LatLon) => {
-        setPosition(ovr)
-    })
-
-    store.on('detailLocation', (ovr) => {
-        if (ovr){
-            setPosition(ovr)
-        }
-    })
-
-    */
-
     const dialIcon = L.divIcon({className: 'dial', iconAnchor: [15, 15], iconSize: [30, 30]})
-
-    /**
-     * TIP: If you want you can make the marker draggable and it will
-     * work as a picker.
-     */
     const dialMarker = L.marker({lat: 0, lng: 0}, {icon: dialIcon, draggable: true})
+
+    dialMarker.on('drag', (evt) => {
+        setPosition(dialMarker.getLatLng(), true)
+    })
 
     dialMarker.on('dragend', (evt) => {
         setPosition(dialMarker.getLatLng())
     })
+
 
     let zuluMode = store.get('zuluMode') // windy required reload for this to take effect anyways, so no store.on needed
 
@@ -118,18 +94,19 @@
             dialMarker.setLatLng({lat: pos?.lat ?? 0, lng: pos?.lon ?? 0})
 
             dialDiv = document.getElementsByClassName('dial').item(0)!
-            dial?.$destroy()
-            dial = new SunDial({
-                target: dialDiv,
-                props: {
-                    sunrisePos: sunrisePos,
-                    sunsetPos: sunsetPos,
-                    moonrisePos: moonrisePos,
-                    moonsetPos: moonsetPos,
-                    sunPos: sunPos,
-                    moonPos: moonPos
-                }
-            })
+            if (!dial){
+                dial = new SunDial({
+                    target: dialDiv,
+                    props: {
+                        sunrisePos: sunrisePos,
+                        sunsetPos: sunsetPos,
+                        moonrisePos: moonrisePos,
+                        moonsetPos: moonsetPos,
+                        sunPos: sunPos,
+                        moonPos: moonPos
+                    }
+                })
+            }
         }
     }
 
@@ -146,7 +123,6 @@
     $: sunsetPos = SunCalc.getPosition(times.sunset, pos.lat, pos.lon)
 
     // get moon directions
-
     $: nextNadir = new Date(times.nadir.getTime() + 24 * 60 * 60 * 1000);
 
     $: moonTimes1 = SunCalc.getMoonTimes(times.nadir, pos.lat, pos.lon) // moon times of first day
@@ -163,14 +139,7 @@
 
     $: moonIllumination = SunCalc.getMoonIllumination(time)
 
-    $: setUrl(name, {lat: pos.lat, lon: pos.lon, showtimeline: showTimeline ? "showTimeline" : "hideTimeline"})
-
-    export const onopen = (params?: Partial<LatLon & {showtimeline: string}> ) => {
-        if (params?.showtimeline){
-            console.log(params.showtimeline)
-            showTimeline = params.showtimeline === "showTimeline";
-        }
-
+    export const onopen = (params?: Partial<LatLon> ) => {
         if (setPosition(params)) return
         if (setPosition(store.get('pickerLocation'))) return
         const mapCenter = map.getCenter()
@@ -180,19 +149,18 @@
     onMount(() => {
         mounted = true;
 
-        singleclick.on(name, setPosition);
+        singleclick.on(config.name, setPosition);
         store.on('timestamp', changeTime )
     });
 
     onDestroy(() => {
 
-        singleclick.off(name, setPosition);
+        singleclick.off(config.name, setPosition);
         store.off('timestamp', changeTime)
 
         mounted = false;
         dialMarker.remove()
         dialDiv = null
-        console.log(showTimeline)
     });
 
 </script>
@@ -207,40 +175,43 @@
 
 -->
 
-<!--div class="footnote">
-    <div>windy-plugin-sun-position@<span class=plugin-version></span></div>
-    <div>by Jochen Jacobs (@jacobsjo)</div><br />
-    <a href="https://community.windy.com/topic/9017/sun-position-plugin">plugin page</a>
-    <a href="https://github.com/jacobsjo/windy-plugin-sun-position">GitHub</a>
-</div-->
 
 <section class="plugin__content">
     <div
         class="plugin__title plugin__title--chevron-back"
         on:click={() => bcast.emit('rqstOpen', 'menu')}
     >
-        {title}
+        {config.title}
     </div>
+    <h3 class:outdated={reverseNameOutdated}>{ reverseName ?? "..." }</h3>
 
-    {#if reverseName}
-        <h3>{ reverseName }</h3>
-        <small>We have a backend API for elevation also</small>
-    {/if}
-
-<div class="current">
-    <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
-    <div class="current-time" id=current_time>{ time_format(time, timezone, zuluMode) }</div>
-    <div class="infoboxes">
-        <CurrentPosInfobox on:setTime={setTime} on:showTimeline={(evt) => showTimeline = evt.detail.enabled} showTimeline={showTimeline} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
-        <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={sunPos} moonIlumination={moonIllumination} />
-    </div>
-    {#if showTimeline}
+    <div class="current">
+        <div class="current-time" id=current_time>{ time_format(time, timezone, zuluMode) }</div>
+        <div class="infoboxes">
+            <CurrentPosInfobox on:setTime={setTime} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
+            <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={sunPos} moonIlumination={moonIllumination} />
+        </div>
+        <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
         <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} />
-    {/if}
-</div>
+    </div>
+
+    <div class="footnote">
+        <div>windy-plugin-sun-position-v2@{config.version}</div>
+        <div>by <a href="https://jacobsjo.eu" target="_blank">Jochen Jacobs (@jacobsjo)</a></div>
+        <a href="https://community.windy.com/topic/9017/sun-position-plugin" target="_blank">plugin page</a>
+        <a href="https://github.com/jacobsjo/windy-plugin-sun-position-v2" target="_blank">GitHub</a>
+        <a href="https://github.com/jacobsjo/windy-plugin-sun-position-v2/issues" target="_blank">Report Issue</a>
+    </div>
+
 </section>
 
 <style lang="less">
+
+    section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
 /*.options{
     display: flex;
     flex-direction: row;
@@ -279,26 +250,44 @@
         --color: @dayColor;
     }
 
+    h3 {
+        font-size: large;
+        color: #ffe3a1;
+        height: 2.6rem;
+        margin: 0;
+    }
 
-.current {
-    // Let's prepare the plugin for mobile UI also
-    // and use relative sizes as much as possible
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    gap: 0.5rem;
-}
+    h3.outdated {
+        color: rgb(158, 149, 132);
+    }
 
-.current-time{
-    font-size:20pt;
-}
+    .current {
+        // Let's prepare the plugin for mobile UI also
+        // and use relative sizes as much as possible
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 0.5rem;
+    }
 
-.infoboxes{
-    width: 100%;
-    display: flex;
-    gap: 1rem;
-}
+    .current-time{
+        font-size:17pt;
+    }
+
+    .infoboxes{
+        width: 100%;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .footnote{
+        color: rgb(172, 172, 172);
+
+        a {
+            text-decoration: underline;
+        }
+    }
 
 </style>
 

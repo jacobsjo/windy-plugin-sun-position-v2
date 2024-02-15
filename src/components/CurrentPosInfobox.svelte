@@ -17,8 +17,6 @@
     export var set: Date | undefined;
     export var moonIlumination: GetMoonIlluminationResult | undefined = undefined;
 
-    export var showTimeline: boolean = false
-
     $: moonPhase = getMoonPhaseName(moonIlumination?.phase ?? 0);
     $: sunlight = getSunlightName(radsToDeg(pos.altitude));
 
@@ -58,7 +56,6 @@
     {/if}
     {#if !isMoon}
     <span class="large-value sunlight" id="{sunlight}">{sunlight == "Astronomical Twilight" ? "Astron. Twilight" : sunlight}</span>
-    <span class="large-value linked" class:selected = {showTimeline} on:click={() => dispatch('showTimeline', {enabled: !showTimeline})}>{showTimeline ? "Hide Timeline" : "Show Timeline"}</span>
     {/if}
 </div>
 
