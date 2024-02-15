@@ -6,7 +6,6 @@ tmp
 .secret-api-key.sh
 nohup.out
 node_modules
-package-lock.json
 *.log
 dist/*
 

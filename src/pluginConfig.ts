@@ -2,7 +2,7 @@ import type { ExternalPluginConfig } from '@windy/interfaces';
 
 const config: ExternalPluginConfig = {
     name: 'windy-plugin-sun-position',
-    version: '2.0.0-alpha.1',
+    version: '0.0.1',
     icon: '☼',
     title: 'Sun Position',
     description:
