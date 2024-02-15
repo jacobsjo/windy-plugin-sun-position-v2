@@ -2,6 +2,8 @@ name: publish-plugin
 
 on:
     workflow_dispatch:
+    push:
+        tags: '*'
 
 jobs:
     publish-plugin:
