@@ -44,8 +44,8 @@
     svg {
         z-index: 1000000;
         position: absolute;
-        left: -150px;
-        top: -150px;
+        left: calc(-150px + 15px);
+        top: calc(-150px + 15px);
         width: 300px;
         height: 300px;
         pointer-events: none;

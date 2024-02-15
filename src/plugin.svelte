@@ -85,13 +85,17 @@
 
     */
 
-    const dialIcon = L.divIcon({className: 'dial', iconAnchor: [0, 0], iconSize: [200, 200]})
+    const dialIcon = L.divIcon({className: 'dial', iconAnchor: [15, 15], iconSize: [30, 30]})
 
     /**
      * TIP: If you want you can make the marker draggable and it will
      * work as a picker.
      */
-    const dialMarker = L.marker({lat: 0, lng: 0}, {icon: dialIcon})
+    const dialMarker = L.marker({lat: 0, lng: 0}, {icon: dialIcon, draggable: true})
+
+    dialMarker.on('dragend', (evt) => {
+        setPosition(dialMarker.getLatLng())
+    })
 
     let zuluMode = store.get('zuluMode') // windy required reload for this to take effect anyways, so no store.on needed
 
