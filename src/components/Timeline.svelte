@@ -30,10 +30,10 @@
         const mt = [
             {name: 'Moonrise', time: moonTimes.rise?.getTime() ?? NaN, moon: true},
             {name: 'Moonset', time: moonTimes.set?.getTime() ?? NaN, moon: true},
-            {name: 'Nadir', time: times.nadir.getTime(), moon: false},
-            {name: 'Sunrise', time: times.sunrise.getTime(), moon: false},
-            {name: 'Solar noon', time: times.solarNoon.getTime(), moon: false},
-            {name: 'Sunset', time: times.sunset.getTime(), moon: false},
+            {name: 'Nadir', time: times.nadir.getTime()},
+            {name: 'Sunrise', time: times.sunrise.getTime()},
+            {name: 'Solar noon', time: times.solarNoon.getTime()},
+            {name: 'Sunset', time: times.sunset.getTime()},
         ].filter(a => !isNaN(a.time)).sort((a, b) => a.time - b.time)
 
         var sortedTimes: { id: string; name: string; time: number; moon?: boolean, minor?: boolean }[] = []
@@ -52,7 +52,7 @@
                 mt.shift()
             }
 
-            sortedTimes.push(t[i]);
+            sortedTimes.push({id: t[i].id, name: t[i].name, time: t[i].time});
             lastId = t[i].id
         }
 
@@ -66,20 +66,21 @@
             }
         }
 
-        mt.forEach(a => sortedTimes.push({id: lastId!, name: a.name, time: a.time, moon: mt[0].moon, minor: true  }))
+        mt.forEach(a => sortedTimes.push({id: lastId!, name: a.name, time: a.time, moon: a.moon, minor: true}))
 
         return sortedTimes
     }
+
 </script>
 
 <div class="timeline">
     {#each sortedTimes as timeframe}
         {#if timeframe.minor}
-            <TimelineEntry isCurrent={false} timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={timeframe.time} id="{timeframe.id ?? ''}" moon={timeframe.moon ?? false} marker="minor"/>      
+            <TimelineEntry timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={timeframe.time} id="{timeframe.id ?? ''}" moon={timeframe.moon ?? false} marker="minor"/>      
         {/if}
         {#if !timeframe.minor}
-            <TimelineEntry isCurrent={false} timezone={timezone} zuluMode={zuluMode} name="" time={timeframe.time} id="{timeframe.id ?? ''}" marker="{isNaN(timeframe.time) ? 'none' : 'major'}"/>      
-            <TimelineEntry isCurrent={false} timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={NaN} id="{timeframe.id ?? ''}" marker="none"/>      
+            <TimelineEntry timezone={timezone} zuluMode={zuluMode} name="" time={timeframe.time} id="{timeframe.id ?? ''}" marker="{isNaN(timeframe.time) ? 'none' : 'major'}"/>      
+            <TimelineEntry timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={NaN} id="{timeframe.id ?? ''}" marker="none"/>      
         {/if}
 
     {/each}

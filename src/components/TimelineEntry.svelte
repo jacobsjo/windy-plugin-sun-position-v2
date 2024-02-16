@@ -9,7 +9,6 @@
     export var marker: string = "none";
     export var moon: boolean = false;
 
-    export var isCurrent: boolean;
     export var timezone: string;
     export var zuluMode: boolean;
 
@@ -21,7 +20,7 @@
 
 </script>
 
-<div class="timelineEntry" class:current={isCurrent} class:moon={moon} id={id}>
+<div class="timelineEntry" class:moon={moon} id={id}>
     <span class="time" >
         {#if !isNaN(time)}
             <a on:click={setTime}>{time_format(time , timezone, zuluMode)}</a>
