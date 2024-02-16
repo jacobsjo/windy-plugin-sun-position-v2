@@ -1,49 +1,85 @@
 <script lang="ts">
+    import { GetTimesResult } from "suncalc";
     import TimelineEntry from "./TimelineEntry.svelte";
     import { Times } from "src/util";
+
+    const timeframes = [
+        'Nighttime',
+        'Astronomical Twilight',
+        'Nautical Twilight',
+        'Blue Hour',
+        'Golden Hour',
+        'Daytime',
+        'Golden Hour',
+        'Blue Hour',
+        'Nautical Twilight',
+        'Astronomical Twilight',
+        'Nighttime'
+    ]
 
     export var timezone: string;
     export var zuluMode: boolean
 
     export var times: Times
+    export var moonTimes: {rise: Date, set: Date}
     export var current: Date
 
-    $: nightExists = !isNaN(times.nightEnd.getTime())
-    $: noonExists = !isNaN(times.goldenHourEnd.getTime())
+    $: sortedTimes = composeTimes(times)
 
-    $: astronomicalTwilightIsMax = isNaN(times.nauticalDawn.getTime()) && nightExists
-    $: nauticalTwilightIsMax = isNaN(times.dawn.getTime()) && nightExists
-    $: blueHourIsMax = isNaN(times.blueHourEnd.getTime()) && nightExists
-    $: goldenHourIsMax = !noonExists && nightExists
+    function composeTimes(times: Times){
+        const t = [
+            {id:'night', name: 'Nighttime', time: NaN},
+            {id:'astro', name: 'Astronomical Twilight', time: times.nightEnd.getTime()},
+            {id:'nautical', name: 'Nautical Twilight', time: times.nauticalDawn.getTime()},
+            {id:'blue', name: 'Blue Hour', time: times.dawn.getTime()},
+            {id:'golden', name: 'Golden Hour', time: times.blueHourEnd.getTime()},
+            {id:'day', name: 'Daytime', time: times.goldenHourEnd.getTime()},
+            {id:'golden', name: 'Golden Hour', time: times.goldenHour.getTime()},
+            {id:'blue', name: 'Blue Hour', time: times.blueHour.getTime()},
+            {id:'nautical', name: 'Nautical Twilight', time: times.dusk.getTime()},
+            {id:'astro', name: 'Astronomical Twilight', time: times.nauticalDusk.getTime()},
+            {id:'night', name: 'Nighttime', time: times.night.getTime()},
+        ]
 
-    $: allDayDaytime = !noonExists && !nightExists
+        const mt = [
+            {name: 'Moonrise', time: moonTimes.rise?.getTime()},
+            {name: 'Moonset', time: moonTimes.set?.getTime()},
+            {name: 'Nadir', time: times.nadir.getTime()},
+            {name: 'Sunrise', time: times.sunrise.getTime()},
+            {name: 'Solar noon', time: times.solarNoon.getTime()},
+            {name: 'Sunset', time: times.sunset.getTime()},
+        ].filter(a => !isNaN(a.time)).sort((a, b) => a.time - b.time)
+
+        var sortedTimes: { id?: string; name: string; time: number; }[] = []
+
+        var isStart = true;
+        var lastId: string | undefined = undefined;
+        for (var i = 0; i < t.length ; i++){
+            if ((isNaN(t[i].time)) && (!isStart || isNaN(t[i+1]?.time))){
+                continue
+            }
+            isStart = false;
+
+            const time = isNaN(t[i].time) ? 0 : t[i].time
+            while (mt.length > 0 && time > mt[0].time){
+                sortedTimes.push({id: lastId, name: mt[0].name, time: mt[0].time })
+                mt.shift()
+            }
+
+            sortedTimes.push(t[i]);
+            lastId = t[i].id
+        }
+
+        mt.forEach(a => sortedTimes.push({id: lastId, name: a.name, time: a.time }))
+
+        return sortedTimes
+    }
 </script>
 
 <div class="timeline">
-    <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Nighttime" startTime={new Date(NaN)} endTime={times.nightEnd}/>      
-    <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Astronomical Twilight" startTime={times.nightEnd} endTime={!astronomicalTwilightIsMax ? times.nauticalDawn : times.night}/>      
-    {#if !astronomicalTwilightIsMax}   
-        <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Nautical Twilight" startTime={times.nauticalDawn} endTime={!nauticalTwilightIsMax ? times.dawn : times.nauticalDusk}/>      
-        {#if !nauticalTwilightIsMax}   
-            <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Blue Hour" startTime={times.dawn} endTime={!blueHourIsMax ? times.blueHourEnd : times.dusk}/>   
-            {#if !blueHourIsMax}   
-                <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Golden Hour" startTime={times.blueHourEnd} endTime={!goldenHourIsMax ? times.goldenHourEnd : times.blueHour}/>      
-                {#if !goldenHourIsMax}
-                    {#if !allDayDaytime}
-                        <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Daytime" startTime={times.goldenHourEnd} endTime={times.goldenHour}/>      
-                    {/if}
-                    <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Golden Hour" startTime={times.goldenHour} endTime={times.blueHour}/>      
-                {/if}
-                <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Blue Hour" startTime={times.blueHour} endTime={times.dusk}/>      
-            {/if}
-            <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Nautical Twilight" startTime={times.dusk} endTime={times.nauticalDusk}/>      
-        {/if}
-        <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Astronomical Twilight" startTime={times.nauticalDusk} endTime={times.night}/>      
-    {/if}
-    <TimelineEntry current={current} timezone={timezone} zuluMode={zuluMode} name="Nighttime" startTime={times.night} endTime={ new Date(NaN)}/>      
-    {#if allDayDaytime}
-        <div id="Daytime">24h Daytime</div>
-    {/if}
+    {#each sortedTimes as timeframe}
+        <TimelineEntry isCurrent={false} timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={timeframe.time} id="{timeframe.id ?? ''}"/>      
+    {/each}
 </div>
 
 <style lang="less">

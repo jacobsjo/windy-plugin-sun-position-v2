@@ -119,8 +119,8 @@
     // get sun directions
     $: times = SunCalc.getTimes(time, pos.lat, pos.lon) as Times;
     $: sunPos = SunCalc.getPosition(time, pos.lat, pos.lon)
-    $: sunrisePos = SunCalc.getPosition(times.sunrise, pos.lat, pos.lon)
-    $: sunsetPos = SunCalc.getPosition(times.sunset, pos.lat, pos.lon)
+    $: sunrisePos = !isNaN(times.sunrise.getTime()) ? SunCalc.getPosition(times.sunrise, pos.lat, pos.lon) : undefined
+    $: sunsetPos = !isNaN(times.sunset.getTime()) ? SunCalc.getPosition(times.sunset, pos.lat, pos.lon) : undefined
 
     // get moon directions
     $: nextNadir = new Date(times.nadir.getTime() + 24 * 60 * 60 * 1000);
@@ -192,7 +192,7 @@
             <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={sunPos} moonIlumination={moonIllumination} />
         </div>
         <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
-        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} />
+        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} />
     </div>
 
     <div class="footnote">
@@ -225,29 +225,34 @@
     @blueColor: rgb(3, 72, 199);
     @goldenColor: orange;
     @dayColor: yellow;
+    @moonColor: rgb(148, 148, 148);
 
-    :global([id='Nighttime']) {
+    :global([id='night']) {
         --color: @nightColor;
     }
 
-    :global([id='Astronomical Twilight']) {
+    :global([id='astro']) {
         --color: @astroColor;
     }
 
-    :global([id='Nautical Twilight']) {
+    :global([id='nautical']) {
         --color: @nauticalColor;
     }
 
-    :global([id='Blue Hour']) {
+    :global([id='blue']) {
         --color: @blueColor;
     }
 
-    :global([id='Golden Hour']) {
+    :global([id='golden']) {
         --color: @goldenColor;
     }
 
-    :global([id='Daytime']) {
+    :global([id='day']) {
         --color: @dayColor;
+    }
+
+    :global([id='moon']) {
+        --color: @moonColor;
     }
 
     h3 {

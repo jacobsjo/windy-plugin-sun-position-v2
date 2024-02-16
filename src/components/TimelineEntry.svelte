@@ -4,47 +4,29 @@
     import { time_format } from "src/util";
 
     export var name: string;
-    export var startTime: Date;
-    export var endTime: Date;
+    export var time: number;
+    export var id: string;
 
-    export var current: Date;
+    export var isCurrent: boolean;
     export var timezone: string;
     export var zuluMode: boolean;
 
-    $: startNaN = isNaN(startTime.getTime())
-    $: endNaN = isNaN(endTime.getTime())
-    $: isCurrent = (startNaN || startTime <= current) && (endNaN || endTime > current)
-
-    function setTimeToStart(){
-        if (!startNaN){
-            store.set('timestamp', startTime.getTime())
-        }
-    }
-
-    function setTimeToEnd(){
-        if (!endNaN){
-            store.set('timestamp', endTime.getTime() - 1)
+    function setTime(){
+        if (!isNaN(time)){
+            store.set('timestamp', time)
         }
     }
 
 </script>
 
-{#if !startNaN || !endNaN}
-<div class="timelineEntry" class:current={isCurrent} id={name}>
+<div class="timelineEntry" class:current={isCurrent} id={id}>
     <span class="times">
-        {#if !startNaN && !endNaN}
-            <span on:click={setTimeToStart}>{time_format(startTime.getTime() , timezone, zuluMode)}</span> - <span on:click={setTimeToEnd}>{time_format(endTime.getTime(), timezone, zuluMode)}</span>
-        {/if}
-        {#if !startNaN && endNaN}
-            starting <span on:click={setTimeToStart}>{time_format(startTime.getTime() , timezone, zuluMode)}</span>
-        {/if}
-        {#if startNaN && !endNaN}
-            until <span on:click={setTimeToEnd}>{time_format(endTime.getTime() , timezone, zuluMode)}</span>
+        {#if !isNaN(time)}
+            <span on:click={setTime}>{time_format(time , timezone, zuluMode)}</span>
         {/if}
     </span>
     <span class="name">{name}</span>
 </div>
-{/if}
 
 <style lang="less">
 
