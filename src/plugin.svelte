@@ -121,6 +121,7 @@
     $: sunPos = SunCalc.getPosition(time, pos.lat, pos.lon)
     $: sunrisePos = !isNaN(times.sunrise.getTime()) ? SunCalc.getPosition(times.sunrise, pos.lat, pos.lon) : undefined
     $: sunsetPos = !isNaN(times.sunset.getTime()) ? SunCalc.getPosition(times.sunset, pos.lat, pos.lon) : undefined
+    $: noonAltitude = SunCalc.getPosition(times.solarNoon, pos.lat, pos.lon).altitude
 
     // get moon directions
     $: nextNadir = new Date(times.nadir.getTime() + 24 * 60 * 60 * 1000);
@@ -192,7 +193,7 @@
             <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={sunPos} moonIlumination={moonIllumination} />
         </div>
         <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
-        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} />
+        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} />
     </div>
 
     <div class="footnote">

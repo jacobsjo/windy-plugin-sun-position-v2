@@ -1,28 +1,14 @@
 <script lang="ts">
-    import { GetTimesResult } from "suncalc";
     import TimelineEntry from "./TimelineEntry.svelte";
     import { Times } from "src/util";
-
-    const timeframes = [
-        'Nighttime',
-        'Astronomical Twilight',
-        'Nautical Twilight',
-        'Blue Hour',
-        'Golden Hour',
-        'Daytime',
-        'Golden Hour',
-        'Blue Hour',
-        'Nautical Twilight',
-        'Astronomical Twilight',
-        'Nighttime'
-    ]
 
     export var timezone: string;
     export var zuluMode: boolean
 
     export var times: Times
-    export var moonTimes: {rise: Date, set: Date}
-    export var current: Date
+    export var noonDaytime: boolean
+    export var moonTimes: {rise: Date | undefined, set: Date | undefined}
+    export var current: number
 
     $: sortedTimes = composeTimes(times)
 
@@ -42,15 +28,15 @@
         ]
 
         const mt = [
-            {name: 'Moonrise', time: moonTimes.rise?.getTime()},
-            {name: 'Moonset', time: moonTimes.set?.getTime()},
-            {name: 'Nadir', time: times.nadir.getTime()},
-            {name: 'Sunrise', time: times.sunrise.getTime()},
-            {name: 'Solar noon', time: times.solarNoon.getTime()},
-            {name: 'Sunset', time: times.sunset.getTime()},
+            {name: 'Moonrise', time: moonTimes.rise?.getTime() ?? NaN, moon: true},
+            {name: 'Moonset', time: moonTimes.set?.getTime() ?? NaN, moon: true},
+            {name: 'Nadir', time: times.nadir.getTime(), moon: false},
+            {name: 'Sunrise', time: times.sunrise.getTime(), moon: false},
+            {name: 'Solar noon', time: times.solarNoon.getTime(), moon: false},
+            {name: 'Sunset', time: times.sunset.getTime(), moon: false},
         ].filter(a => !isNaN(a.time)).sort((a, b) => a.time - b.time)
 
-        var sortedTimes: { id?: string; name: string; time: number; }[] = []
+        var sortedTimes: { id: string; name: string; time: number; moon?: boolean, minor?: boolean }[] = []
 
         var isStart = true;
         var lastId: string | undefined = undefined;
@@ -62,7 +48,7 @@
 
             const time = isNaN(t[i].time) ? 0 : t[i].time
             while (mt.length > 0 && time > mt[0].time){
-                sortedTimes.push({id: lastId, name: mt[0].name, time: mt[0].time })
+                sortedTimes.push({id: lastId!, name: mt[0].name, time: mt[0].time, moon: mt[0].moon, minor: true })
                 mt.shift()
             }
 
@@ -70,7 +56,17 @@
             lastId = t[i].id
         }
 
-        mt.forEach(a => sortedTimes.push({id: lastId, name: a.name, time: a.time }))
+        if (lastId === undefined){
+            if (noonDaytime){
+                sortedTimes.push({id:'day', name: 'Daytime', time: NaN})
+                lastId = 'day'
+            } else {
+                sortedTimes.push({id:'night', name: 'Nighttime', time: NaN})
+                lastId = 'night'
+            }
+        }
+
+        mt.forEach(a => sortedTimes.push({id: lastId!, name: a.name, time: a.time, moon: mt[0].moon, minor: true  }))
 
         return sortedTimes
     }
@@ -78,7 +74,14 @@
 
 <div class="timeline">
     {#each sortedTimes as timeframe}
-        <TimelineEntry isCurrent={false} timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={timeframe.time} id="{timeframe.id ?? ''}"/>      
+        {#if timeframe.minor}
+            <TimelineEntry isCurrent={false} timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={timeframe.time} id="{timeframe.id ?? ''}" moon={timeframe.moon ?? false} marker="minor"/>      
+        {/if}
+        {#if !timeframe.minor}
+            <TimelineEntry isCurrent={false} timezone={timezone} zuluMode={zuluMode} name="" time={timeframe.time} id="{timeframe.id ?? ''}" marker="{isNaN(timeframe.time) ? 'none' : 'major'}"/>      
+            <TimelineEntry isCurrent={false} timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={NaN} id="{timeframe.id ?? ''}" marker="none"/>      
+        {/if}
+
     {/each}
 </div>
 
@@ -86,11 +89,11 @@
     .timeline {
         display: flex;
         flex-direction: column;
-        gap: 0.1rem;
+        gap: 0rem;
 
         width: 18rem;
 
-        background-color: rgb(110, 110, 110);
+        background-color: rgb(90, 90, 90);
         padding: 0.1rem 1rem;
         border-radius: 10px;
         border: 0.1rem solid rgb(179, 179, 179);
@@ -98,6 +101,8 @@
         .gap {
             height: 0.5rem;
         }
+
+        padding-bottom: 1.1rem;
 
     }
 
