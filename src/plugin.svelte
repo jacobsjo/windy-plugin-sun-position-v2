@@ -208,6 +208,10 @@
 
 <style lang="less">
 
+    .plugin__content {
+        padding-bottom: 25pt !important;
+    }
+
     section {
         display: flex;
         flex-direction: column;
