@@ -39,19 +39,19 @@ export function getMoonPhaseName(phase: number){
     return INBETWEEN_PHASES[Math.floor(phase * 4)];
 }
 
-export function getSunlightName(altitude: number): string{
+export function getSunlightName(altitude: number): [string, string]{
     if (altitude < -18){
-        return "Nighttime";
+        return ["night", "Nighttime"];
     } else if (altitude < -12){
-        return "Astronomical Twilight";
+        return ["astro", "Astronomical Twilight"];
     } else if (altitude < -6){
-        return "Nautical Twilight";
+        return ["nautical", "Nautical Twilight"];
     } else if (altitude < -4){
-        return "Blue Hour";
+        return ["blue", "Blue Hour"];
     } else if (altitude < 6){
-        return "Golden Hour";
+        return ["golden", "Golden Hour"];
     } else {
-        return "Daytime";
+        return ["day", "Daytime"];
     }
 }
 

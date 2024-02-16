@@ -55,7 +55,7 @@
     <span class="large-value">{moonPhase}</span>
     {/if}
     {#if !isMoon}
-    <span class="large-value sunlight" id="{sunlight}">{sunlight == "Astronomical Twilight" ? "Astron. Twilight" : sunlight}</span>
+    <span class="large-value sunlight" id="{sunlight[0]}">{sunlight[0] == "astro" ? "Astron. Twilight" : sunlight[1]}</span>
     {/if}
 </div>
 
