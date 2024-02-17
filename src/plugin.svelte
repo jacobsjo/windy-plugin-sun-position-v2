@@ -3,6 +3,8 @@
     import { map } from '@windy/map';
     import { setUrl } from '@windy/location';
     import bcast from '@windy/broadcast';
+    import { isMobileOrTablet } from '@windy/rootScope';
+    
     import { onDestroy, onMount } from 'svelte';
     import SunCalc from 'suncalc';
     import tzlookup from 'tz-lookup';
@@ -20,17 +22,35 @@
     import SunDial from './components/SunDial.svelte';
     import Timeline from './components/Timeline.svelte';
     import type { Timestamp } from '@windy/types';
+    import Tabber from './components/Tabber.svelte';
 
 
     SunCalc.addTime(-4, "blueHourEnd", "blueHour")
 
     var mounted = false;
 
+    var active_mobile_tab = "current"
+
 //    let time = new Date(2023, 12, 15, 10, 0, 0, 0)
     let time = store.get('timestamp')
     let model = store.get('product')
 
-    const changeTime = (_tm: Timestamp) => time = _tm;
+    var customTimecodeElement = document.createElement('div');
+    customTimecodeElement.className = "box"
+    customTimecodeElement.id = "custom_timecode"
+
+    function changeTime(_tm: Timestamp){
+        time = _tm;
+        if (isMobileOrTablet){
+            const timecodeElement = document.getElementsByClassName("timecode")[0]
+            if (!timecodeElement.children.namedItem('custom_timecode')){
+                timecodeElement.insertBefore(customTimecodeElement, timecodeElement.firstChild)
+            }
+
+            customTimecodeElement.innerHTML = time_format(time, timezone, zuluMode)
+        }
+    }
+
 
     let pos: LatLon = {lat: 0, lon: 0};
 
@@ -188,10 +208,15 @@
         mounted = false;
         dialMarker.remove()
         dialDiv = null
+
+        if (isMobileOrTablet){
+            document.getElementsByClassName("timecode")[0].removeChild(customTimecodeElement)
+        }
     });
 
 </script>
 
+{#if !isMobileOrTablet}
 <section class="plugin__content">
     <div
         class="plugin__title plugin__title--chevron-back"
@@ -200,14 +225,13 @@
         {config.title}
     </div>
     <h3 class:outdated={reverseNameOutdated}>{ reverseName ?? "..." }</h3>
-
-    <div class="current">
-        <div class="current-time" id=current_time>{ time_format(time, timezone, zuluMode) }</div>
-        <div class="infoboxes">
-            <CurrentPosInfobox on:setTime={setTime} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
-            <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={sunPos} moonIlumination={moonIllumination} />
-        </div>
-        <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
+    <div class="current-time" id=current_time>{ time_format(time, timezone, zuluMode) }</div>
+    <div class="infoboxes">
+        <CurrentPosInfobox on:setTime={setTime} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
+        <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={moonPos} moonIlumination={moonIllumination} />
+    </div>
+    <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
+    <div class="timeline-box">
         <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
     </div>
 
@@ -220,17 +244,60 @@
     </div>
 
 </section>
+{:else}
+<section class="mobile_ui">
+    <Tabber active_tab={active_mobile_tab} on:setTab={(tab) => active_mobile_tab = tab.detail} />
+    <div class="mobile_content">
+        {#if active_mobile_tab === "current"}
+            <div class="infoboxes">
+                <CurrentPosInfobox on:setTime={setTime} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
+                <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={moonPos} moonIlumination={moonIllumination} />
+            </div>
+        {:else if active_mobile_tab === "diagram"}
+            <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
+        {:else}
+            <div class="mobile-timeline-box">
+                <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
+            </div>
+        {/if}
+    </div>
+</section>
+{/if}
 
 <style lang="less">
 
+    // hide the default windy mobile timecode, to display more precise timecode instead
+    :global(.timecode :nth-child(2).box) {
+        display: none;
+    }
+
     .plugin__content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        overflow: scroll;
         padding-bottom: 25pt !important;
     }
 
-    section {
+    .mobile_ui {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0rem;
+        align-items: center;
+        margin-top: -4pt;
+        height: 150px;
+    }
+
+    .mobile_content {
+        height: 0;
+        flex-grow: 1;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: scroll;
+        padding: 0.3rem;
     }
 
     @nightColor: black;
@@ -281,14 +348,6 @@
         color: rgb(158, 149, 132);
     }
 
-    .current {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        gap: 0.5rem;
-    }
-
     .current-time{
         font-size:17pt;
     }
@@ -297,6 +356,20 @@
         width: 100%;
         display: flex;
         gap: 1rem;
+        justify-content: center;
+    }
+
+    .timeline-box {
+        background-color: rgb(90, 90, 90);
+        padding: 0.1rem 1rem;
+        border-radius: 10px;
+        border: 0.1rem solid rgb(179, 179, 179);
+        width: 90%;
+    }
+
+    .mobile-timeline-box {
+        margin-top: -1.2rem;
+        margin-bottom: -1.2rem;
     }
 
     .footnote{

@@ -32,19 +32,17 @@
 </script>
 
 <div class="box">
-    <span class="title" class:moon={isMoon}>{title}</span><br />
+    <span class="title" class:moon={isMoon}>{title}</span>
     <div class="line">
-        <span class="small-label">↗</span>
+        <span class="small-label" title="{title}rise">↗</span>
         <span class="value linked" on:click={() => setTime(rise)}>{time_format(rise?.getTime() ?? NaN, timezone, zuluMode)}</span>
-        <span class="small-label">↘</span>
+        <span class="small-label" title="{title}set">↘</span>
         <span class="value linked" on:click={() => setTime(set)}>{time_format(set?.getTime() ?? NaN, timezone, zuluMode)}</span>
     </div>
     <div class="line">
-        <span class="label">Azimuth</span>
+        <span class="small-label" title="Azimith">🧭</span>
         <span class="value">{radsToDeg(pos.azimuth).toFixed(1)}°</span>
-    </div>
-    <div class="line">
-        <span class="label">Altitude</span>
+        <span class="small-label" title="Altitude">∡</span>
         <span class="value">{radsToDeg(pos.altitude).toFixed(1)}°</span>
     </div>
     {#if isMoon && moonIlumination !== undefined}
@@ -68,6 +66,7 @@
         border: 0.1rem solid rgb(179, 179, 179);
         width: 0;
         flex-grow: 1;
+        max-width: 10rem;
         display: flex;
         padding: 0.2rem;
         padding-top: 0.4rem;

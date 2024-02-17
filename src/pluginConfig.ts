@@ -14,7 +14,7 @@ const config: ExternalPluginConfig = {
     desktopUI: 'rhpane',
     desktopWidth: 340,
 
-    mobileUI: 'fullscreen',
+    mobileUI: 'small',
 
     private: true, // TODO change this when ready to publish,
 

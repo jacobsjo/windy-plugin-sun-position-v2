@@ -94,13 +94,6 @@
         flex-direction: column;
         gap: 0rem;
 
-        width: 18rem;
-
-        background-color: rgb(90, 90, 90);
-        padding: 0.1rem 1rem;
-        border-radius: 10px;
-        border: 0.1rem solid rgb(179, 179, 179);
-
         .gap {
             height: 0.5rem;
         }
