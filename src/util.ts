@@ -55,6 +55,10 @@ export function getSunlightName(altitude: number): [string, string]{
     }
 }
 
+export function isNight(id: string){
+    return id === "night" || id === "astro" || id === "nautical" || id === "blue";
+}
+
 export function radsToDeg(rad: number){
     return rad / Math.PI * 180;
 }

@@ -10,6 +10,8 @@
     export var moonTimes: {rise: Date | undefined, set: Date | undefined}
     export var current: number
 
+    export var iconByDate: Map<number, [number, number]> | undefined
+
     $: sortedTimes = composeTimes(times)
 
     function composeTimes(times: Times){
@@ -76,11 +78,11 @@
 <div class="timeline">
     {#each sortedTimes as timeframe}
         {#if timeframe.minor}
-            <TimelineEntry timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={timeframe.time} id="{timeframe.id ?? ''}" moon={timeframe.moon ?? false} marker="minor"/>      
+            <TimelineEntry timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="{timeframe.name}" time={timeframe.time} id="{timeframe.id ?? ''}" moon={timeframe.moon ?? false} marker="minor"/>      
         {/if}
         {#if !timeframe.minor}
-            <TimelineEntry timezone={timezone} zuluMode={zuluMode} name="" time={timeframe.time} id="{timeframe.id ?? ''}" marker="{isNaN(timeframe.time) ? 'none' : 'major'}"/>      
-            <TimelineEntry timezone={timezone} zuluMode={zuluMode} name="{timeframe.name}" time={NaN} id="{timeframe.id ?? ''}" marker="none"/>      
+            <TimelineEntry timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="" time={timeframe.time} id="{timeframe.id ?? ''}" marker="{isNaN(timeframe.time) ? 'none' : 'major'}"/>      
+            <TimelineEntry timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="{timeframe.name}" time={NaN} id="{timeframe.id ?? ''}" marker="none"/>      
         {/if}
 
     {/each}

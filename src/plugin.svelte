@@ -9,10 +9,11 @@
 
     import { singleclick } from '@windy/singleclick';
     import { get as getReverseName } from '@windy/reverseName';
+    import { getPointForecastData } from '@windy/fetch';
 
     import config from './pluginConfig';
 
-    import { Times, time_format } from "./util";
+    import { Times, mod, time_format } from "./util";
     import AltitudeDiagram from "./components/AltitudeDiagram.svelte";
     import CurrentPosInfobox from "./components/CurrentPosInfobox.svelte";
     import type { LatLon } from '@windy/interfaces';
@@ -23,14 +24,11 @@
 
     SunCalc.addTime(-4, "blueHourEnd", "blueHour")
 
-//    let showPhotoSun = true
-//    let showAstroSun = true
-//    let showMoon = true
-
     var mounted = false;
 
 //    let time = new Date(2023, 12, 15, 10, 0, 0, 0)
     let time = store.get('timestamp')
+    let model = store.get('product')
 
     const changeTime = (_tm: Timestamp) => time = _tm;
 
@@ -38,6 +36,8 @@
 
     let reverseName: null | string = null;
     let reverseNameOutdated: boolean = true;
+
+    let iconByDate: Map<number, [number, number]> | undefined = undefined;
 
     function setPosition(setPos?: any, isDrag: boolean = false): boolean{
         if (setPos && setPos.lat && (setPos.lon || setPos.lng)){
@@ -51,14 +51,38 @@
                 getReverseName(pos).then(({name, region}) => {
                     reverseName = (region && region !== name) ? `${ name }, ${ region }` : name;
                     reverseNameOutdated = false
+                    updateForecastData()
                 });
+
+
+
+
             } else {
                 reverseNameOutdated = true
+                iconByDate = undefined
             }
 
             return true
         }
         return false
+    }
+
+    function setModel(setModel: string){
+        model = setModel
+        updateForecastData()
+    }
+
+    function updateForecastData(){
+        getPointForecastData(model, {lat: pos.lat, lon: pos.lon, step: 1, interpolate: true}, config.name).then((forecast) => {
+            const data = forecast.data.data
+            const map = new Map<number, [number, number]>()
+            for (var i = 0 ; i < data.icon.length; i++){
+                map.set(data.origTs[i], [data.icon[i], data.moonPhase[i]])
+            }
+            iconByDate = map
+        }).catch((reason) => {
+            iconByDate = undefined
+        })
     }
 
     const dialIcon = L.divIcon({className: 'dial', iconAnchor: [15, 15], iconSize: [30, 30]})
@@ -152,12 +176,14 @@
 
         singleclick.on(config.name, setPosition);
         store.on('timestamp', changeTime )
+        store.on('product', setModel)
     });
 
     onDestroy(() => {
 
         singleclick.off(config.name, setPosition);
         store.off('timestamp', changeTime)
+        store.off('product', setModel)
 
         mounted = false;
         dialMarker.remove()
@@ -165,17 +191,6 @@
     });
 
 </script>
-
-<!--
-<div class="options">
-    <ImageCheckbox enabled={showAstroSun} title="Show sun details (astronomical)" emote="&#x1f52d;" />
-    <ImageCheckbox enabled={showPhotoSun} title="Show sun details (photography)" emote="&#x1f4f7;" />
-    <ImageCheckbox enabled={showMoon} title="Show moon details" isMoon emote="&#x263E;" />
-</div>
-<div class="timeline"></div>
-
--->
-
 
 <section class="plugin__content">
     <div
@@ -193,7 +208,7 @@
             <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={sunPos} moonIlumination={moonIllumination} />
         </div>
         <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
-        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} />
+        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
     </div>
 
     <div class="footnote">
@@ -217,12 +232,6 @@
         flex-direction: column;
         gap: 0.5rem;
     }
-/*.options{
-    display: flex;
-    flex-direction: row;
-    gap: 0.4rem;
-    justify-content: center;
-}*/
 
     @nightColor: black;
     @astroColor: #040438;
@@ -263,7 +272,8 @@
     h3 {
         font-size: large;
         color: #ffe3a1;
-        height: 2.6rem;
+        min-height: 2.6rem;
+        max-height: 2.6rem;
         margin: 0;
     }
 
@@ -272,8 +282,6 @@
     }
 
     .current {
-        // Let's prepare the plugin for mobile UI also
-        // and use relative sizes as much as possible
         display: flex;
         flex-direction: column;
         align-items: center;
