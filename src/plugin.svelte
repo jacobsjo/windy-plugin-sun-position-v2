@@ -15,12 +15,11 @@
 
     import config from './pluginConfig';
 
-    import { Times, mod, time_format } from "./util";
+    import { Times, time_format } from "./util";
     import AltitudeDiagram from "./components/AltitudeDiagram.svelte";
     import CurrentPosInfobox from "./components/CurrentPosInfobox.svelte";
     import type { LatLon } from '@windy/interfaces';
     import SunDial from './components/SunDial.svelte';
-    import Timeline from './components/Timeline.svelte';
     import type { Timestamp } from '@windy/types';
     import Tabber from './components/Tabber.svelte';
     import MobileScrolledTimeline from './components/MobileScrolledTimeline.svelte';
@@ -67,7 +66,7 @@
         clearTimeout(timeout)
         timeout = setTimeout(() => {
             pauseDragUpdate = false
-        }, 500)
+        }, 1000)
     }
 
     $: if (active_mobile_tab === "timeline") pauseDrag()
@@ -268,7 +267,7 @@
         <CurrentPosInfobox isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={moonPos} moonIlumination={moonIllumination} />
     </div>
     <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
-    <DesktopTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate} extend={1}/>
+    <DesktopTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
 
     <div class="footnote">
         <div>windy-plugin-sun-position-v2@{config.version}</div>
