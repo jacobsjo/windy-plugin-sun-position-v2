@@ -2,8 +2,8 @@
     import { LatLon } from '@windycom/plugin-devtools/types/interfaces';
     import SunCalc from 'suncalc';
 
-    const WIDTH = 290;
-    const HEIGHT = 100;
+    const WIDTH = 400;
+    const HEIGHT = 150;
     const SECONDS_IN_DAY: number = 24 * 60 * 60 * 1000;
     const STEPS = 100
     const STEP_SIZE = 24.0 * 60 * 60 * 1000 / STEPS
@@ -29,12 +29,12 @@
 
 </script>
 
-<svg class="sun-path">
+<svg viewBox="0 0 {WIDTH} {HEIGHT}" class="sun-path">
     <path id=sun_path d={LINE(sunData)} />
     <path id=moon_path d={LINE(moonData)}  />
     <path id=horizon d="M 0 {HEIGHT/2} H {WIDTH}" />
-    <circle id=moon cx="{markerXPos}" cy="{moonYPos}" r="4"/>
-    <circle id=sun cx="{markerXPos}" cy="{sunYPos}" r="4"/>
+    <circle id=moon cx="{markerXPos}" cy="{moonYPos}" r="6"/>
+    <circle id=sun cx="{markerXPos}" cy="{sunYPos}" r="6"/>
 </svg>
 
 <style lang="less">
@@ -42,8 +42,9 @@
     @moonDasharray: 0 1 2 2 3 2 3 1;
 
     svg{
-        width: 290px;
-        height: 100px;
+        width: 100%;
+        max-height: 100%;
+        aspect-ratio: 1;
         min-height: 100px;
         path {
             fill: none;

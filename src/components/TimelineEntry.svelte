@@ -1,7 +1,6 @@
 
 <script lang="ts">
     import store from "@windy/store";
-    import { isMobileOrTablet } from "@windy/rootScope";
     import { isNight, time_format } from "src/util";
     import config from "src/pluginConfig";
 
@@ -17,14 +16,6 @@
     export var zuluMode: boolean;
     export var iconByDate: Map<number, [number, number]> | undefined;
 
-    var element: HTMLElement
-
-    $: if (isCurrent && isMobileOrTablet) scrollToSelf()
-
-    function scrollToSelf(){
-        element?.scrollIntoView({behavior: 'smooth'})
-    }   
-
     function setTime(){
         if (!isNaN(time)){
             store.set('timestamp', time, {UIident: `${config.name}-timeline`})
@@ -39,7 +30,7 @@
 
 </script>
 
-<div class="timelineEntry" class:moon={moon} class:snap-align={!isNaN(time)} data-sunphase={data} on:click={() => {if (!isCurrent) setTime()}} data-timestamp={time} data-current={isCurrent} bind:this={element}>
+<div class="timelineEntry" class:moon={moon} class:snap-align={!isNaN(time)} class:current={isCurrent} data-sunphase={data} on:click={() => {if (!isCurrent) setTime()}} data-timestamp={time} data-current={isCurrent}>
     <span class="time" >
         {#if !isNaN(time)}
             <a on:click={setTime}>{time_format(time , timezone, zuluMode)}</a>
@@ -62,7 +53,9 @@
         height: 18px;
         color: var(--color);
         align-items: center;
+        position: relative;
         --markerColor: var(--color);
+        z-index: 0;
     }
 
     .timelineEntry.snap-align {
@@ -97,6 +90,7 @@
         height: 0rem;
         width: 0.8rem;
         position: relative;
+        z-index: 10;
     }
 
     .marker.major::after{

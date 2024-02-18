@@ -1,6 +1,6 @@
 
 <script lang="ts">
-    import { Times, time_format } from "src/util";
+    import { Times } from "src/util";
     import Timeline from "./Timeline.svelte";
     import store from "@windy/store";
     import config from "src/pluginConfig";
@@ -19,38 +19,53 @@
 
     var timeout = 0
 
+    var box: HTMLElement | undefined = undefined
+
+    var first = true;
+
+    $: time, setTimeout(setHeighlight, 0)
+    function setHeighlight(){
+        const current: HTMLElement | null = document.querySelector(".timelineEntry.current")
+        if (!current) return;
+        console.log(current)
+        current.scrollIntoView({behavior: first ? "instant" : "smooth"})        
+        first = false
+    }
+
     function onScroll(evt: UIEvent & {currentTarget: EventTarget & HTMLDivElement;}) {
         if (pauseDragUpdate) return
-        const currentTarget = evt.currentTarget
         clearTimeout(timeout)
-        timeout = setTimeout(() => {
-            if (pauseDragUpdate) return
-            const timelineElement = currentTarget.children[0]
-            var selectedElement = undefined
-            for (var child_id = 0 ; child_id < timelineElement.childElementCount; child_id++){
-                const child = timelineElement.children[child_id] as HTMLElement
-                const distance = Math.abs(child.offsetTop + child.offsetHeight / 2 - (currentTarget.scrollTop + currentTarget.offsetHeight / 2))
-                if (distance < 1){
-                    selectedElement = child
-                    break;
-                }
+        timeout = setTimeout(selectByScroll, 50)
+    }
+
+    function selectByScroll(){
+        if (pauseDragUpdate) return
+        if (!box) return
+        const timelineElement = box.children[0]
+        var selectedElement = undefined
+        for (var child_id = 0 ; child_id < timelineElement.childElementCount; child_id++){
+            const child = timelineElement.children[child_id] as HTMLElement
+            const distance = Math.abs(child.offsetTop + child.offsetHeight / 2 - (box.scrollTop + box.offsetHeight / 2))
+            if (distance < 1){
+                selectedElement = child
+                break;
             }
+        }
 
-            if (!selectedElement || !selectedElement.dataset.timestamp || !selectedElement.dataset.current) return
+        if (!selectedElement || !selectedElement.dataset.timestamp || !selectedElement.dataset.current) return
 
-            const scrollTimestamp = Number.parseInt(selectedElement.dataset.timestamp)
-            if (isNaN(scrollTimestamp)) return
+        const scrollTimestamp = Number.parseInt(selectedElement.dataset.timestamp)
+        if (isNaN(scrollTimestamp)) return
 
-            if (scrollTimestamp !== lastScrollTimestamp){
-                store.set("timestamp", Number.parseInt(selectedElement.dataset.timestamp), {UIident: `${config.name}-timeline-drag`})
-            }
-            lastScrollTimestamp = scrollTimestamp
-        }, 50)
+        if (scrollTimestamp !== lastScrollTimestamp){
+            store.set("timestamp", Number.parseInt(selectedElement.dataset.timestamp), {UIident: `${config.name}-timeline-drag`})
+        }
+        lastScrollTimestamp = scrollTimestamp
     }
 </script>
 
 <div class="mobile-timeline-hightlight" />
-<div class="mobile-timeline-box" on:scroll={onScroll} class:noScroll={pauseDragUpdate}>
+<div class="mobile-timeline-box" on:scroll={onScroll} class:noScroll={pauseDragUpdate} bind:this={box}>
     <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonDaytime} iconByDate={iconByDate} extend={4}/>
 </div>
 

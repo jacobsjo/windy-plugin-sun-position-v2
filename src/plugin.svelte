@@ -24,6 +24,7 @@
     import type { Timestamp } from '@windy/types';
     import Tabber from './components/Tabber.svelte';
     import MobileScrolledTimeline from './components/MobileScrolledTimeline.svelte';
+    import DesktopTimeline from './components/DesktopTimeline.svelte';
 
 
     SunCalc.addTime(-4, "blueHourEnd", "blueHour")
@@ -42,7 +43,6 @@
 
     var lastUpdate = 0;
     var pauseDragUpdate = false
-    var timeout = 0
 
     function changeTime(_tm: Timestamp, context?: string){
         // this fixes an issue with windy where the mobile calendar (botomCal) updates the timestamp imediatly after set.
@@ -55,15 +55,22 @@
             } else {
                 lastUpdate = 0
                 if (context !== `-${config.name}-fix-mobile-bug`){
-                    pauseDragUpdate = true
-                    clearTimeout(timeout)
-                    timeout = setTimeout(() => {
-                        pauseDragUpdate = false
-                    }, 1000)
+                    pauseDrag()
                 }
             }
         }
     }
+
+    var timeout = 0
+    function pauseDrag(){
+        pauseDragUpdate = true
+        clearTimeout(timeout)
+        timeout = setTimeout(() => {
+            pauseDragUpdate = false
+        }, 500)
+    }
+
+    $: if (active_mobile_tab === "timeline") pauseDrag()
 
     $: updateTimecodeElement(time, timezone, zuluMode)
 
@@ -92,6 +99,7 @@
         if (setPos && setPos.lat && (setPos.lon || setPos.lng)){
             pos = {lat: setPos.lat, lon: setPos.lon ?? setPos.lng}
             updateMarker()
+            pauseDrag()
 
             if (!isDrag){
                 //console.log('settings url')
@@ -260,9 +268,7 @@
         <CurrentPosInfobox isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={moonPos} moonIlumination={moonIllumination} />
     </div>
     <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
-    <div class="timeline-box">
-        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate} extend={1}/>
-    </div>
+    <DesktopTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate} extend={1}/>
 
     <div class="footnote">
         <div>windy-plugin-sun-position-v2@{config.version}</div>
@@ -385,13 +391,6 @@
         justify-content: center;
     }
 
-    .timeline-box {
-        background-color: rgb(90, 90, 90);
-        padding: 0.1rem 1rem;
-        border-radius: 10px;
-        border: 0.1rem solid rgb(179, 179, 179);
-        width: 90%;
-    }
 
 
 
