@@ -41,7 +41,6 @@
     customTimecodeElement.id = "custom_timecode"
 
     var lastUpdate = 0;
-    var pauseDragUpdate = false
 
     function changeTime(_tm: Timestamp, context?: string){
         // this fixes an issue with windy where the mobile calendar (botomCal) updates the timestamp imediatly after set.
@@ -53,23 +52,9 @@
                 lastUpdate = performance.now()
             } else {
                 lastUpdate = 0
-                if (context !== `-${config.name}-fix-mobile-bug`){
-                    pauseDrag()
-                }
             }
         }
     }
-
-    var timeout = 0
-    function pauseDrag(){
-        pauseDragUpdate = true
-        clearTimeout(timeout)
-        timeout = setTimeout(() => {
-            pauseDragUpdate = false
-        }, 1000)
-    }
-
-    $: if (active_mobile_tab === "timeline") pauseDrag()
 
     $: updateTimecodeElement(time, timezone, zuluMode)
 
@@ -290,7 +275,7 @@
         {:else if active_mobile_tab === "diagram"}
             <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
         {:else}
-            <MobileScrolledTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate} pauseDragUpdate={pauseDragUpdate}/>
+            <MobileScrolledTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
         {/if}
     </div>
 </section>

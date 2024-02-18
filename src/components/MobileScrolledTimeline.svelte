@@ -11,7 +11,6 @@
     export var times: Times;
     export var moonTimes: {rise: Date | undefined, set: Date | undefined}
     export var noonDaytime: boolean
-    export var pauseDragUpdate: boolean = false
 
     export var iconByDate: Map<number, [number, number]> | undefined
 
@@ -22,24 +21,26 @@
     var box: HTMLElement | undefined = undefined
 
     var first = true;
+    var isScrolling = false;
 
-    $: time, setTimeout(setHeighlight, 0)
+    $: time, isScrolling, setTimeout(setHeighlight, 0)
     function setHeighlight(){
+        if (isScrolling) return
         const current: HTMLElement | null = document.querySelector(".timelineEntry.current")
         if (!current) return;
-        console.log(current)
-        current.scrollIntoView({behavior: first ? "instant" : "smooth"})        
+        current.scrollIntoView({behavior: "instant", block: "center", inline: "center"})        
         first = false
     }
 
     function onScroll(evt: UIEvent & {currentTarget: EventTarget & HTMLDivElement;}) {
-        if (pauseDragUpdate) return
+        if (first) return
+        isScrolling = true;
         clearTimeout(timeout)
         timeout = setTimeout(selectByScroll, 50)
     }
 
     function selectByScroll(){
-        if (pauseDragUpdate) return
+
         if (!box) return
         const timelineElement = box.children[0]
         var selectedElement = undefined
@@ -53,6 +54,8 @@
         }
 
         if (!selectedElement || !selectedElement.dataset.timestamp || !selectedElement.dataset.current) return
+        isScrolling = false
+        if (selectedElement.classList.contains('current')) return
 
         const scrollTimestamp = Number.parseInt(selectedElement.dataset.timestamp)
         if (isNaN(scrollTimestamp)) return
@@ -61,11 +64,12 @@
             store.set("timestamp", Number.parseInt(selectedElement.dataset.timestamp), {UIident: `${config.name}-timeline-drag`})
         }
         lastScrollTimestamp = scrollTimestamp
+
     }
 </script>
 
 <div class="mobile-timeline-hightlight" />
-<div class="mobile-timeline-box" on:scroll={onScroll} class:noScroll={pauseDragUpdate} bind:this={box}>
+<div class="mobile-timeline-box" on:scroll={onScroll} bind:this={box}>
     <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonDaytime} iconByDate={iconByDate} extend={4}/>
 </div>
 
@@ -81,10 +85,6 @@
         padding-left: 3rem;
         overflow: scroll;
         position: relative;
-    }
-
-    .mobile-timeline-box.noScroll{
-        overflow-y: hidden;
     }
 
     .mobile-timeline-box::-webkit-scrollbar {
