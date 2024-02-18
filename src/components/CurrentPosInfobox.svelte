@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-
     import { getMoonPhaseName, getSunlightName, radsToDeg, time_format } from 'src/util';
     import {
         GetMoonIlluminationResult,
         GetMoonPositionResult,
         GetSunPositionResult,
     } from 'suncalc';
+    import store from '@windy/store';
+    import config from 'src/pluginConfig';
 
     export var isMoon: boolean = false;
     export var timezone: string;
@@ -20,13 +20,9 @@
     $: moonPhase = getMoonPhaseName(moonIlumination?.phase ?? 0);
     $: sunlight = getSunlightName(radsToDeg(pos.altitude));
 
-    const dispatch = createEventDispatcher();
-
     function setTime(time: Date | undefined){
         if (time){
-            dispatch('setTime', {
-                time: time.getTime()
-            })
+            store.set('timestamp', time.getTime(), {UIident: `${config.name}-current`})
         }
     }
 </script>
@@ -53,7 +49,7 @@
     <span class="large-value">{moonPhase}</span>
     {/if}
     {#if !isMoon}
-    <span class="large-value sunlight" id="{sunlight[0]}">{sunlight[0] == "astro" ? "Astron. Twilight" : sunlight[1]}</span>
+    <span class="large-value sunlight" data-sunphase="{sunlight[0]}">{sunlight[0] == "astro" ? "Astron. Twilight" : sunlight[1]}</span>
     {/if}
 </div>
 

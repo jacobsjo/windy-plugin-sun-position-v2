@@ -23,6 +23,7 @@
     import Timeline from './components/Timeline.svelte';
     import type { Timestamp } from '@windy/types';
     import Tabber from './components/Tabber.svelte';
+    import MobileScrolledTimeline from './components/MobileScrolledTimeline.svelte';
 
 
     SunCalc.addTime(-4, "blueHourEnd", "blueHour")
@@ -39,10 +40,39 @@
     customTimecodeElement.className = "box"
     customTimecodeElement.id = "custom_timecode"
 
-    function changeTime(_tm: Timestamp){
-        time = _tm;
+    var lastUpdate = 0;
+    var pauseDragUpdate = false
+    var timeout = 0
+
+    function changeTime(_tm: Timestamp, context?: string){
+        // this fixes an issue with windy where the mobile calendar (botomCal) updates the timestamp imediatly after set.
+        if (context === "botomCal" && performance.now() - lastUpdate < 1000){
+            setTimeout(() => store.set("timestamp", time, {UIident: `-${config.name}-fix-mobile-bug`}), 10)  // UIident with dash at start to not match startsWith below
+        } else {
+            time = _tm;
+            if (context?.startsWith(`${config.name}-`)){
+                lastUpdate = performance.now()
+            } else {
+                lastUpdate = 0
+                if (context !== `-${config.name}-fix-mobile-bug`){
+                    pauseDragUpdate = true
+                    clearTimeout(timeout)
+                    timeout = setTimeout(() => {
+                        pauseDragUpdate = false
+                    }, 1000)
+                }
+            }
+        }
+    }
+
+    $: updateTimecodeElement(time, timezone, zuluMode)
+
+    function updateTimecodeElement(time: number, timezone: string, zuluMode: boolean){
         if (isMobileOrTablet){
             const timecodeElement = document.getElementsByClassName("timecode")[0]
+            if (!timecodeElement){
+                return
+            }
             if (!timecodeElement.children.namedItem('custom_timecode')){
                 timecodeElement.insertBefore(customTimecodeElement, timecodeElement.firstChild)
             }
@@ -50,7 +80,6 @@
             customTimecodeElement.innerHTML = time_format(time, timezone, zuluMode)
         }
     }
-
 
     let pos: LatLon = {lat: 0, lon: 0};
 
@@ -154,10 +183,6 @@
         }
     }
 
-    function setTime(event: any){
-        store.set('timestamp', event.detail.time)
-    }
-
     $: timezone = tzlookup(pos.lat, pos.lon)
 
     // get sun directions
@@ -197,6 +222,10 @@
         singleclick.on(config.name, setPosition);
         store.on('timestamp', changeTime )
         store.on('product', setModel)
+
+        //bcast.emit('rqstOpen', 'developer-mode')
+        //setTimeout(() => setUrl(config.name, pos), 1000)
+
     });
 
     onDestroy(() => {
@@ -227,12 +256,12 @@
     <h3 class:outdated={reverseNameOutdated}>{ reverseName ?? "..." }</h3>
     <div class="current-time" id=current_time>{ time_format(time, timezone, zuluMode) }</div>
     <div class="infoboxes">
-        <CurrentPosInfobox on:setTime={setTime} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
-        <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={moonPos} moonIlumination={moonIllumination} />
+        <CurrentPosInfobox title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
+        <CurrentPosInfobox isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={moonPos} moonIlumination={moonIllumination} />
     </div>
     <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
     <div class="timeline-box">
-        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
+        <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate} extend={1}/>
     </div>
 
     <div class="footnote">
@@ -250,15 +279,13 @@
     <div class="mobile_content">
         {#if active_mobile_tab === "current"}
             <div class="infoboxes">
-                <CurrentPosInfobox on:setTime={setTime} title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
-                <CurrentPosInfobox on:setTime={setTime} isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={moonPos} moonIlumination={moonIllumination} />
+                <CurrentPosInfobox title="Sun" timezone={timezone} zuluMode={zuluMode} rise={times.sunrise} set={times.sunset} pos={sunPos} />
+                <CurrentPosInfobox isMoon title="Moon" timezone={timezone} zuluMode={zuluMode} rise={moonTimes.rise} set={moonTimes.set} pos={moonPos} moonIlumination={moonIllumination} />
             </div>
         {:else if active_mobile_tab === "diagram"}
             <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
         {:else}
-            <div class="mobile-timeline-box">
-                <Timeline current={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
-            </div>
+            <MobileScrolledTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate} pauseDragUpdate={pauseDragUpdate}/>
         {/if}
     </div>
 </section>
@@ -296,7 +323,6 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        overflow: scroll;
         padding: 0.3rem;
     }
 
@@ -308,31 +334,31 @@
     @dayColor: yellow;
     @moonColor: rgb(148, 148, 148);
 
-    :global([id='night']) {
+    :global([data-sunphase='night']) {
         --color: @nightColor;
     }
 
-    :global([id='astro']) {
+    :global([data-sunphase='astro']) {
         --color: @astroColor;
     }
 
-    :global([id='nautical']) {
+    :global([data-sunphase='nautical']) {
         --color: @nauticalColor;
     }
 
-    :global([id='blue']) {
+    :global([data-sunphase='blue']) {
         --color: @blueColor;
     }
 
-    :global([id='golden']) {
+    :global([data-sunphase='golden']) {
         --color: @goldenColor;
     }
 
-    :global([id='day']) {
+    :global([data-sunphase='day']) {
         --color: @dayColor;
     }
 
-    :global([id='moon']) {
+    :global([data-sunphase='moon']) {
         --color: @moonColor;
     }
 
@@ -367,10 +393,7 @@
         width: 90%;
     }
 
-    .mobile-timeline-box {
-        margin-top: -1.2rem;
-        margin-bottom: -1.2rem;
-    }
+
 
     .footnote{
         color: rgb(172, 172, 172);

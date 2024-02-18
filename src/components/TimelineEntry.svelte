@@ -1,22 +1,33 @@
 
 <script lang="ts">
     import store from "@windy/store";
+    import { isMobileOrTablet } from "@windy/rootScope";
     import { isNight, time_format } from "src/util";
+    import config from "src/pluginConfig";
 
     export var name: string;
     export var time: number;
-    export var id: string;
+    export var data: string;
     export var marker: string = "none";
     export var moon: boolean = false;
     export var moonPhase: number = 6;
+    export var isCurrent: boolean = false;
 
     export var timezone: string;
     export var zuluMode: boolean;
     export var iconByDate: Map<number, [number, number]> | undefined;
 
+    var element: HTMLElement
+
+    $: if (isCurrent && isMobileOrTablet) scrollToSelf()
+
+    function scrollToSelf(){
+        element?.scrollIntoView({behavior: 'smooth'})
+    }   
+
     function setTime(){
         if (!isNaN(time)){
-            store.set('timestamp', time)
+            store.set('timestamp', time, {UIident: `${config.name}-timeline`})
         }
     }
 
@@ -24,11 +35,11 @@
         return (Math.abs(closest[0] - time) < Math.abs(current[0] - time) ? closest : current)
     }) : undefined
     
-        $: icon_string = selected_icon && Math.abs(selected_icon[0] - time) < 60 * 60 * 1000 ? selected_icon[1][0].toString() + (isNight(id) ? "_night_" + ((selected_icon[1][1] + 3) % 8 + 1).toString() : "") : undefined
+        $: icon_string = selected_icon && Math.abs(selected_icon[0] - time) < 60 * 60 * 1000 ? selected_icon[1][0].toString() + (isNight(data) ? "_night_" + ((selected_icon[1][1] + 3) % 8 + 1).toString() : "") : undefined
 
 </script>
 
-<div class="timelineEntry" class:moon={moon} id={id}>
+<div class="timelineEntry" class:moon={moon} class:snap-align={!isNaN(time)} data-sunphase={data} on:click={() => {if (!isCurrent) setTime()}} data-timestamp={time} data-current={isCurrent} bind:this={element}>
     <span class="time" >
         {#if !isNaN(time)}
             <a on:click={setTime}>{time_format(time , timezone, zuluMode)}</a>
@@ -48,10 +59,14 @@
     .timelineEntry {
         display: flex;
         gap: 0.2rem;
-        height: 1.1rem;
+        height: 18px;
         color: var(--color);
         align-items: center;
         --markerColor: var(--color);
+    }
+
+    .timelineEntry.snap-align {
+        scroll-snap-align: center;
     }
 
     .timelineEntry.moon {

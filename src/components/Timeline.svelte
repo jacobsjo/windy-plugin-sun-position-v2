@@ -2,6 +2,8 @@
     import TimelineEntry from "./TimelineEntry.svelte";
     import { Times } from "src/util";
 
+    export var extend: number; // extend timeline up and down in entry count
+
     export var timezone: string;
     export var zuluMode: boolean
 
@@ -73,18 +75,27 @@
         return sortedTimes
     }
 
+    $: selectedTimestamp = sortedTimes.reduce((last, t) => (!isNaN(t.time) && (t.time <= current + 100 || last === undefined)) ? t : last, undefined)?.time
 </script>
 
 <div class="timeline">
+    {#each Array(extend) as _}
+        <TimelineEntry timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="" time={NaN} data="{sortedTimes[0].id ?? ''}" marker="none"/>      
+    {/each}
     {#each sortedTimes as timeframe}
         {#if timeframe.minor}
-            <TimelineEntry timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="{timeframe.name}" time={timeframe.time} id="{timeframe.id ?? ''}" moon={timeframe.moon ?? false} marker="minor"/>      
+            <TimelineEntry isCurrent={timeframe.time === selectedTimestamp} timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="{timeframe.name}" time={timeframe.time} data="{timeframe.id ?? ''}" moon={timeframe.moon ?? false} marker="minor"/>      
         {/if}
         {#if !timeframe.minor}
-            <TimelineEntry timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="" time={timeframe.time} id="{timeframe.id ?? ''}" marker="{isNaN(timeframe.time) ? 'none' : 'major'}"/>      
-            <TimelineEntry timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="{timeframe.name}" time={NaN} id="{timeframe.id ?? ''}" marker="none"/>      
+            {#if !isNaN(timeframe.time)}
+                <TimelineEntry isCurrent={timeframe.time === selectedTimestamp} timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="" time={timeframe.time} data="{timeframe.id ?? ''}" marker="major"/>      
+            {/if}
+            <TimelineEntry timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="{timeframe.name}" time={NaN} data="{timeframe.id ?? ''}" marker="none"/>      
         {/if}
 
+    {/each}
+    {#each Array(extend - 1) as _}
+        <TimelineEntry timezone={timezone} zuluMode={zuluMode} iconByDate={iconByDate} name="" time={NaN} data="{sortedTimes[sortedTimes.length - 1].id ?? ''}" marker="none"/>      
     {/each}
 </div>
 
@@ -95,7 +106,7 @@
         gap: 0rem;
 
         .gap {
-            height: 0.5rem;
+            height: 8px;
         }
 
         padding-bottom: 1.1rem;
