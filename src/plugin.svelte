@@ -40,21 +40,9 @@
     customTimecodeElement.className = "box"
     customTimecodeElement.id = "custom_timecode"
 
-    var lastUpdate = 0;
-
     function changeTime(_tm: Timestamp, context?: string){
-        // this fixes an issue with windy where the mobile calendar (botomCal) updates the timestamp imediatly after set.
-        if (context === "botomCal" && performance.now() - lastUpdate < 1000){
-            setTimeout(() => store.set("timestamp", time, {UIident: `-${config.name}-fix-mobile-bug`}), 10)  // UIident with dash at start to not match startsWith below
-        } else {
-            time = _tm;
-            if (context?.startsWith(`${config.name}-`)){
-                lastUpdate = performance.now()
-            } else {
-                lastUpdate = 0
-            }
-        }
-    }
+        time = _tm;
+   }
 
     $: updateTimecodeElement(time, timezone, zuluMode)
 
@@ -83,7 +71,6 @@
         if (setPos && setPos.lat && (setPos.lon || setPos.lng)){
             pos = {lat: setPos.lat, lon: setPos.lon ?? setPos.lng}
             updateMarker()
-            pauseDrag()
 
             if (!isDrag){
                 //console.log('settings url')
@@ -157,6 +144,7 @@
         if (mounted){
             dialMarker.addTo(map)
             dialMarker.setLatLng({lat: pos?.lat ?? 0, lng: pos?.lon ?? 0})
+            L.DomUtil.addClass(dialMarker._icon, "sun-position-dial")
 
             dialDiv = document.getElementsByClassName('dial').item(0)!
             if (!dial){
@@ -264,7 +252,7 @@
 
 </section>
 {:else}
-<section class="mobile_ui">
+<section class="mobile_ui" class:light_background={active_mobile_tab==="timeline"}>
     <Tabber active_tab={active_mobile_tab} on:setTab={(tab) => active_mobile_tab = tab.detail} />
     <div class="mobile_content">
         {#if active_mobile_tab === "current"}
@@ -297,6 +285,10 @@
         padding-bottom: 25pt !important;
     }
 
+    :global(.plugin-mobile-bottom-small#plugin-windy-plugin-sun-position){
+        padding: 0;
+    }
+
     .mobile_ui {
         display: flex;
         flex-direction: column;
@@ -304,6 +296,10 @@
         align-items: center;
         margin-top: -4pt;
         height: 150px;
+    }
+
+    .mobile_ui.light_background {
+        background-color: rgb(90, 90, 90);
     }
 
     .mobile_content {
@@ -322,7 +318,6 @@
     @blueColor: rgb(3, 72, 199);
     @goldenColor: orange;
     @dayColor: yellow;
-    @moonColor: rgb(148, 148, 148);
 
     :global([data-sunphase='night']) {
         --color: @nightColor;
@@ -348,10 +343,6 @@
         --color: @dayColor;
     }
 
-    :global([data-sunphase='moon']) {
-        --color: @moonColor;
-    }
-
     h3 {
         font-size: large;
         color: #ffe3a1;
@@ -375,8 +366,9 @@
         justify-content: center;
     }
 
-
-
+    :global(.sun-position-dial) {
+        cursor: move !important;
+    }
 
     .footnote{
         color: rgb(172, 172, 172);

@@ -32,7 +32,7 @@
         padding: 0.1rem 1rem;
         border-radius: 10px;
         border: 0.1rem solid rgb(179, 179, 179);
-        width: 90%;
+        width: 95%;
         position: relative;
     }
 

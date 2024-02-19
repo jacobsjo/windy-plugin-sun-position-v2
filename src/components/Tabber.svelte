@@ -29,6 +29,7 @@
         background-color: black;
         border-radius: 0 0 1rem 1rem;
         overflow: hidden;
+        z-index: 100;
     }
 
     .tabber-button {

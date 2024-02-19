@@ -47,6 +47,8 @@
 
 <style lang="less">
 
+    @moonColor: rgb(226, 226, 226);
+
     .timelineEntry {
         display: flex;
         gap: 0.2rem;
@@ -63,8 +65,8 @@
     }
 
     .timelineEntry.moon {
-        color: rgb(165, 165, 165);
-        --markerColor: rgb(165, 165, 165);
+        color: @moonColor;
+        --markerColor: @moonColor;
     }
 
     .icon {

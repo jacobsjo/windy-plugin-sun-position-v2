@@ -80,11 +80,12 @@
         scroll-snap-stop: always;
         -ms-overflow-style: none;
         scrollbar-width: none;
-        height: 100%;
         width: 90%;
         padding-left: 3rem;
         overflow: scroll;
         position: relative;
+        margin-top: -1.5rem;
+        margin-bottom: -1.5rem;
     }
 
     .mobile-timeline-box::-webkit-scrollbar {
@@ -96,7 +97,7 @@
         top: 50%;
         left: 2rem;
         height: 1.5rem;
-        transform: translateY(-0.15rem);
+        transform: translateY(-0.1rem);
         width: calc(100% - 4rem);
         background-color: rgb(104, 104, 104);
         border: 2px solid rgb(58, 58, 58);
