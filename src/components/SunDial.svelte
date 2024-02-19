@@ -48,7 +48,11 @@
         top: calc(-150px + 15px);
         width: 300px;
         height: 300px;
-        pointer-events: none;
+        pointer-events: none !important;
+
+        * {
+            pointer-events: none !important;
+        }
 
         .sunLine {
             stroke: rgba(68, 65, 65, 0.84);
