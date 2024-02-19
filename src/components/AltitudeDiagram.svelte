@@ -44,7 +44,6 @@
     svg{
         width: 100%;
         max-height: 100%;
-        aspect-ratio: 1;
         min-height: 100px;
         path {
             fill: none;
