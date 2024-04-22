@@ -18,6 +18,9 @@
     <div class="tabber-button" class:active={active_tab === "timeline"} on:click={() => dispatch("setTab", "timeline")}>
         Timeline
     </div>
+    <div class="tabber-button" class:active={active_tab === "about"} on:click={() => dispatch("setTab", "about")}>
+        About
+    </div>
 </div>
 
 <style lang="less">

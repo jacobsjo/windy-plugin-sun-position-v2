@@ -24,6 +24,7 @@
     import Tabber from './components/Tabber.svelte';
     import MobileScrolledTimeline from './components/MobileScrolledTimeline.svelte';
     import DesktopTimeline from './components/DesktopTimeline.svelte';
+    import Footer from './components/Footer.svelte';
 
 
     SunCalc.addTime(-4, "blueHourEnd", "blueHour")
@@ -245,15 +246,7 @@
     </div>
     <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
     <DesktopTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
-
-    <div class="footnote">
-        <div>windy-plugin-sun-position-v2@{config.version}</div>
-        <div>by <a href="https://jacobsjo.eu" target="_blank">Jochen Jacobs (@jacobsjo)</a></div>
-        <a href="https://community.windy.com/topic/9017/sun-position-plugin" target="_blank">plugin page</a>
-        <a href="https://github.com/jacobsjo/windy-plugin-sun-position-v2" target="_blank">GitHub</a>
-        <a href="https://github.com/jacobsjo/windy-plugin-sun-position-v2/issues" target="_blank">Report Issue</a>
-    </div>
-
+    <Footer />
 </section>
 {:else}
 <section class="mobile_ui" class:light_background={active_mobile_tab==="timeline"}>
@@ -266,8 +259,10 @@
             </div>
         {:else if active_mobile_tab === "diagram"}
             <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
-        {:else}
+        {:else if active_mobile_tab === "timeline"}
             <MobileScrolledTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
+        {:else}
+            <Footer />
         {/if}
     </div>
 </section>
@@ -372,14 +367,6 @@
 
     :global(.sun-position-dial) {
         cursor: move !important;
-    }
-
-    .footnote{
-        color: rgb(172, 172, 172);
-
-        a {
-            text-decoration: underline;
-        }
     }
 
 </style>
