@@ -16,7 +16,6 @@
     function setHeighlight(){
         const current: HTMLElement | null = document.querySelector(".timelineEntry.current")
         if (!current) return;
-        console.log(current)
         hightlightElement.style.top = current.offsetTop + "px"
     }
 </script>

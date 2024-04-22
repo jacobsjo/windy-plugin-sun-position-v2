@@ -1,8 +1,6 @@
 
 <script lang="ts">
-    import store from "@windy/store";
-    import { isNight, time_format } from "src/util";
-    import config from "src/pluginConfig";
+    import { isNight, setTime, time_format } from "src/util";
 
     export var name: string;
     export var time: number;
@@ -16,9 +14,9 @@
     export var zuluMode: boolean;
     export var iconByDate: Map<number, [number, number]> | undefined;
 
-    function setTime(){
+    function updateTimestamp(){
         if (!isNaN(time)){
-            store.set('timestamp', time, {UIident: `${config.name}-timeline`})
+            setTime(time, 'timeline');
         }
     }
 
@@ -30,10 +28,10 @@
 
 </script>
 
-<div class="timelineEntry" class:moon={moon} class:snap-align={!isNaN(time)} class:current={isCurrent} data-sunphase={data} on:click={() => {if (!isCurrent) setTime()}} data-timestamp={time} data-current={isCurrent}>
+<div class="timelineEntry" class:moon={moon} class:snap-align={!isNaN(time)} class:current={isCurrent} data-sunphase={data} on:click={() => {if (!isCurrent) updateTimestamp()}} data-timestamp={time} data-current={isCurrent}>
     <span class="time" >
         {#if !isNaN(time)}
-            <a on:click={setTime}>{time_format(time , timezone, zuluMode)}</a>
+            <a on:click|stopPropagation={() => {updateTimestamp()}}>{time_format(time , timezone, zuluMode)}</a>
         {/if}
     </span>
     <span class="{marker}" class:marker={true}/>

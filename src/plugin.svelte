@@ -166,7 +166,7 @@
     $: timezone = tzlookup(pos.lat, pos.lon)
 
     // get sun directions
-    $: times = SunCalc.getTimes(time, pos.lat, pos.lon) as Times;
+    $: times = SunCalc.getTimes(time+1000 * 60 * 5, pos.lat, pos.lon) as Times;
     $: sunPos = SunCalc.getPosition(time, pos.lat, pos.lon)
     $: sunrisePos = !isNaN(times.sunrise.getTime()) ? SunCalc.getPosition(times.sunrise, pos.lat, pos.lon) : undefined
     $: sunsetPos = !isNaN(times.sunset.getTime()) ? SunCalc.getPosition(times.sunset, pos.lat, pos.lon) : undefined
@@ -201,6 +201,8 @@
 
         singleclick.on(config.name, setPosition);
         store.on('timestamp', changeTime )
+        store.on('radarTimestamp', changeTime )
+        store.on('satelliteTimestamp', changeTime )
         store.on('product', setModel)
 
         //bcast.emit('rqstOpen', 'developer-mode')
@@ -212,6 +214,8 @@
 
         singleclick.off(config.name, setPosition);
         store.off('timestamp', changeTime)
+        store.off('radarTimestamp', changeTime )
+        store.off('satelliteTimestamp', changeTime )
         store.off('product', setModel)
 
         mounted = false;

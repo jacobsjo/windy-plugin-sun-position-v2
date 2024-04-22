@@ -5,8 +5,7 @@
         GetMoonPositionResult,
         GetSunPositionResult,
     } from 'suncalc';
-    import store from '@windy/store';
-    import config from 'src/pluginConfig';
+    import { setTime } from 'src/util';
 
     export var isMoon: boolean = false;
     export var timezone: string;
@@ -19,21 +18,15 @@
 
     $: moonPhase = getMoonPhaseName(moonIlumination?.phase ?? 0);
     $: sunlight = getSunlightName(radsToDeg(pos.altitude));
-
-    function setTime(time: Date | undefined){
-        if (time){
-            store.set('timestamp', time.getTime(), {UIident: `${config.name}-current`})
-        }
-    }
 </script>
 
 <div class="box">
     <span class="title" class:moon={isMoon}>{title}</span>
     <div class="line">
         <span class="small-label" title="{title}rise">↗</span>
-        <span class="value linked" on:click={() => setTime(rise)}>{time_format(rise?.getTime() ?? NaN, timezone, zuluMode)}</span>
+        <span class="value linked" on:click={() => setTime(rise, `current`)}>{time_format(rise?.getTime() ?? NaN, timezone, zuluMode)}</span>
         <span class="small-label" title="{title}set">↘</span>
-        <span class="value linked" on:click={() => setTime(set)}>{time_format(set?.getTime() ?? NaN, timezone, zuluMode)}</span>
+        <span class="value linked" on:click={() => setTime(set, `current`)}>{time_format(set?.getTime() ?? NaN, timezone, zuluMode)}</span>
     </div>
     <div class="line">
         <span class="small-label" title="Azimith">🧭</span>

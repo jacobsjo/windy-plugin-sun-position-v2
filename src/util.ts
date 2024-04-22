@@ -1,4 +1,10 @@
+import store from "@windy/store";
 import { GetTimesResult } from "suncalc";
+import config from "./pluginConfig";
+import { Overlays } from "@windycom/plugin-devtools/types/client/d.ts.files/rootScope";
+import { overlays } from "@windycom/plugin-devtools/types/client/rootScope";
+import { DataSpecifications } from "@windycom/plugin-devtools/types/client/d.ts.files/dataSpecifications";
+import { Calendar } from "@windycom/plugin-devtools/types/client/Calendar";
 
 
 export function time_format(d: number, timezone: string, zuluMode: boolean): string {
@@ -61,6 +67,34 @@ export function isNight(id: string){
 
 export function radsToDeg(rad: number){
     return rad / Math.PI * 180;
+}
+
+export function setTime(time: Date | number | undefined, UIident: string){
+    if (time){
+        if (typeof time === "object" && time instanceof Date){
+            time = time.getTime();
+        }
+
+        let timestampStore: keyof DataSpecifications = 'timestamp';
+
+        const overlay: string = store.get('overlay');
+        if (overlay === "radar" || overlay === "satellite"){
+            timestampStore = `${overlay}Timestamp`;
+
+            const calendar: Calendar = store.get(`${overlay}Calendar`);
+            if (time > calendar.end){
+                time = calendar.end as number;
+            } else if (time < calendar.start && !(calendar as any).isArchive){
+                store.set(`${overlay}Range`, 'long');
+                const minTime = ((calendar as any).now ?? calendar.end) - 1000 * 60 * 60 * 12;
+                if (time < minTime) {
+                    time = minTime;
+                }
+            }
+        }
+
+        store.set(timestampStore, time, {UIident: `${config.name}-${UIident}`});
+    }
 }
 
 export type Times = GetTimesResult & {blueHour: Date; blueHourEnd: Date};
