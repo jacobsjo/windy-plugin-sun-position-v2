@@ -14,7 +14,7 @@ The top of the pane shows a diagram of the sun and moon altitudes over the curse
 
 ## Changelog
 See https://github.com/jacobsjo/windy-plugin-sun-position for the changelog of version 1
-### v2.0.0 (compared to v0.3.6)
+### v2.0.0-alpha.8 (compared to v0.3.6)
 - Completely rewritten plugin for windy plugin api v2.
 - Using svelte to make plugin more modular
 - more compact design
@@ -22,7 +22,10 @@ See https://github.com/jacobsjo/windy-plugin-sun-position for the changelog of v
 - added weather information to the timeline
 - separate small mobile ui with 3 tabs
 - removed the option to hide specific parts of the timeline
-- *this changelog will be updated until the 2.0.0 release*
+
+### V2.0.0-beta.1
+- support for radar and satellite timelines
+- fix bug when clicking on nadir time in timeline
 
 ## Development
 Contributions are welcome!
