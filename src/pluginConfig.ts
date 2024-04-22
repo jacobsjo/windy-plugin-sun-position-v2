@@ -2,7 +2,7 @@ import type { ExternalPluginConfig } from '@windy/interfaces';
 
 const config: ExternalPluginConfig = {
     name: 'windy-plugin-sun-position',
-    version: '2.0.0-alpha.8',
+    version: '2.0.0-beta.1',
     icon: '☼',
     title: 'Sun Position',
     description:
@@ -16,12 +16,12 @@ const config: ExternalPluginConfig = {
 
     mobileUI: 'small',
 
-    private: true, // TODO change this when ready to publish,
+    private: false,
 
     addToContextmenu: true,
     listenToSingleclick: true,
 
-    homepage: 'https://community.windy.com/topic/9017/sun-position-plugin',
+    homepage: 'https://community.windy.com/topic/32647/sun-position-plugin-v2',
 };
 
 export default config;

@@ -1,6 +1,8 @@
 <p align="center"><img src="https://www.windy.com/img/logo201802/logo-full-windycom-gray-v3.svg"></p>
 
-Windy plugin that gives shows sun and moon position on the map and gives details about sunset and sunrise times as well as other sun and moon details. This is a full rewrite of [version 1](https://github.com/jacobsjo/windy-plugin-sun-position) to work with the new windy plugin api and includes a number of improvements.
+A Windy plugin that shows sun and moon positions on the map and gives details about sunset and sunrise times as well as other sun and moon details. This is a full rewrite of [version 1](https://github.com/jacobsjo/windy-plugin-sun-position) to work with the new windy plugin api and includes a number of improvements.
+
+To use it on desktop go to https://windy.com, then go to `Menu` -> `Install Windy Plugin` -> `Sun and Moon position` -> `Install plugin`. You can then access it by right-clicking on the map and selecting `Sun Position`. The plugin will stay available even after a reload. (Mobile TBD)
 
 ![Sun detail pane](src/screenshot.png?raw=true "Screenshot of a dial showing directions and an info window")
 
