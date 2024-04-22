@@ -11,7 +11,7 @@
     </p>
     <a href="https://github.com/sponsors/jacobsjo" class="support">♥ <span>Sponsor me on GitHub</span></a>
     <p class="links">
-        <a href="https://community.windy.com/topic/9017/sun-position-plugin" target="_blank">Community Post</a>
+        <a href="https://community.windy.com/topic/32647/sun-position-plugin-v2" target="_blank">Community Post</a>
         <a href="https://github.com/jacobsjo/windy-plugin-sun-position-v2" target="_blank">Source</a>
         <a href="https://github.com/jacobsjo/windy-plugin-sun-position-v2/issues" target="_blank">Issues</a>
     </p>
