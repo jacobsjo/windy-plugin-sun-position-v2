@@ -9,7 +9,11 @@
     <p class="main">
         Sun Position Plugin made by <a href="https://jacobsjo.eu" target="_blank">jacobsjo</a>
     </p>
-    <a href="https://github.com/sponsors/jacobsjo" class="support">♥ <span>Sponsor me on GitHub</span></a>
+    <p class="links support">
+        Support me:
+        <a href="https://ko-fi.com/jacobsjo">Ko-fi</a>
+        <a href="https://github.com/sponsors/jacobsjo">GitHub Sponsors</a>
+    </p>
     <p class="links">
         <a href="https://community.windy.com/topic/32647/sun-position-plugin-v2" target="_blank">Community Post</a>
         <a href="https://github.com/jacobsjo/windy-plugin-sun-position-v2" target="_blank">Source</a>
