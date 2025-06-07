@@ -40,7 +40,7 @@ jobs:
                     echo "Secret WINDY_API_KEY is not configured" >&2
                     exit 1
                   fi
-                  response=$(curl -s --fail-with-body -XPOST 'https://api.windy.com/api/windy-plugins/v1.0/upload' -H "x-windy-api-key: ${WINDY_API_KEY}" -F "plugin_archive=@plugin.tar")
+                  response=$(curl -s --fail-with-body -XPOST 'https://node.windy.com/plugins/v1.0/upload' -H "x-windy-api-key: ${WINDY_API_KEY}" -F "plugin_archive=@plugin.tar")
                   url=${response#"Plugin install URL: "}
                   echo "url=${url}" >> $GITHUB_OUTPUT
             - name: Save Artifact
