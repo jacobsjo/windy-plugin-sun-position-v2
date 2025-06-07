@@ -14,6 +14,8 @@
 
     export var iconByDate: Map<number, [number, number]> | undefined
 
+    export var tolerance: number = 100
+
     $: sortedTimes = composeTimes(times)
 
     function composeTimes(times: Times){
@@ -75,7 +77,7 @@
         return sortedTimes
     }
 
-    $: selectedTimestamp = sortedTimes.reduce((last, t) => (!isNaN(t.time) && (t.time <= current + 100 || last === undefined)) ? t : last, undefined)?.time
+    $: selectedTimestamp = sortedTimes.reduce((last, t) => (!isNaN(t.time) && (t.time <= current + tolerance || last === undefined)) ? t : last, undefined)?.time
 </script>
 
 <div class="timeline">

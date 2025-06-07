@@ -22,9 +22,9 @@
     import SunDial from './components/SunDial.svelte';
     import type { Timestamp } from '@windy/types';
     import Tabber from './components/Tabber.svelte';
-    import MobileScrolledTimeline from './components/MobileScrolledTimeline.svelte';
     import DesktopTimeline from './components/DesktopTimeline.svelte';
     import Footer from './components/Footer.svelte';
+    import SimpleMobileTimeline from './components/SimpleMobileTimeline.svelte';
 
 
     SunCalc.addTime(-4, "blueHourEnd", "blueHour")
@@ -262,7 +262,7 @@
         {:else if active_mobile_tab === "diagram"}
             <AltitudeDiagram nadir={times.nadir.getTime()} pos={pos} time={time} moonAltitude={moonPos.altitude} sunAltitude={sunPos.altitude} />
         {:else if active_mobile_tab === "timeline"}
-            <MobileScrolledTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
+            <SimpleMobileTimeline time={time} timezone={timezone} zuluMode={zuluMode} times={times} moonTimes={moonTimes} noonDaytime={noonAltitude > 0} iconByDate={iconByDate}/>
         {:else}
             <Footer />
         {/if}
