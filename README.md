@@ -29,6 +29,11 @@ See https://github.com/jacobsjo/windy-plugin-sun-position for the changelog of v
 - support for radar and satellite timelines
 - fix bug when clicking on nadir time in timeline
 
+### V2.0.1
+- Add support for new Radar+ layer
+- Make sundial more readable on dark background by adding a light drop shaddow
+- Changed the displayed azimuth to be measured "North to East" rather than "South to West"
+
 ## Development
 Contributions are welcome!
 
