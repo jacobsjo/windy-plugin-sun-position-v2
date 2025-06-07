@@ -30,7 +30,7 @@
     </div>
     <div class="line">
         <span class="small-label" title="Azimith">🧭</span>
-        <span class="value">{radsToDeg(pos.azimuth).toFixed(1)}°</span>
+        <span class="value">{(radsToDeg(pos.azimuth)+180).toFixed(1)}°</span>
         <span class="small-label" title="Altitude">∡</span>
         <span class="value">{radsToDeg(pos.altitude).toFixed(1)}°</span>
     </div>
@@ -93,8 +93,10 @@
     .value {
         display: inline-block;
         text-align: left;
-        width: 5rem;
-        
+        width: 2.5rem;
+        max-width: 2.5rem;
+        min-width: 2.5rem;
+        flex-grow: 0;        
     }
 
     .linked {
