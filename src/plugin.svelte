@@ -204,6 +204,7 @@
         store.on('timestamp', changeTime )
         store.on('radarTimestamp', changeTime )
         store.on('satelliteTimestamp', changeTime )
+        store.on('radsatTimestamp', changeTime )
         store.on('product', setModel)
 
         //bcast.emit('rqstOpen', 'developer-mode')
@@ -217,6 +218,7 @@
         store.off('timestamp', changeTime)
         store.off('radarTimestamp', changeTime )
         store.off('satelliteTimestamp', changeTime )
+        store.off('radsatTimestamp', changeTime )
         store.off('product', setModel)
 
         mounted = false;
