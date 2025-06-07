@@ -40,9 +40,9 @@ jobs:
                     echo "Secret WINDY_API_KEY is not configured" >&2
                     exit 1
                   fi
-                  response=$(curl -s --fail-with-body -XPOST 'https://node.windy.com/plugins/v1.0/upload' -H "x-windy-api-key: ${WINDY_API_KEY}" -F "plugin_archive=@plugin.tar")
-                  url=${response#"Plugin install URL: "}
+                  url=$(curl -s --fail-with-body -XPOST 'https://node.windy.com/plugins/v1.0/upload' -H "x-windy-api-key: ${WINDY_API_KEY}" -F "plugin_archive=@plugin.tar" | jq --raw-output '.installUrl')
                   echo "url=${url}" >> $GITHUB_OUTPUT
+                  echo "Published plugin at: ${url}"
             - name: Save Artifact
               uses: actions/upload-artifact@v4
               with:
