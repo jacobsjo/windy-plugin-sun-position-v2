@@ -41,6 +41,8 @@
     @sunDasharray: 10 2 1 2;
     @moonDasharray: 0 1 2 2 3 2 3 1;
 
+    @lineColor: rgb(53, 53, 53);
+
     svg {
         z-index: 1000000;
         position: absolute;
@@ -50,17 +52,19 @@
         height: 300px;
         pointer-events: none !important;
 
+        filter: drop-shadow(0px 0px 1px rgb(177, 177, 177));
+
         * {
             pointer-events: none !important;
         }
 
         .sunLine {
-            stroke: rgba(68, 65, 65, 0.84);
+            stroke: @lineColor;
             stroke-width: 3;
         }
 
         .moonLine {
-            stroke: rgba(68, 65, 65, 0.84);
+            stroke: @lineColor;
             stroke-width: 3;
         }
 
@@ -73,12 +77,12 @@
         }
 
         .center {
-            fill: rgba(68, 65, 65, 0.84);;
+            fill: @lineColor;
         }
 
         .sunRiseSet,
         .moonRiseSet {
-            stroke: rgba(68, 65, 65, 0.84);
+            stroke: @lineColor;
             stroke-width: 2;
             stroke-dasharray: @sunDasharray;
             pointer-events: auto;
